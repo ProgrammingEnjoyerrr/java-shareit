@@ -8,6 +8,8 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collection;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,28 +21,33 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
 
-        userRepository.createUser(user);
-        return null;
+        User created = userRepository.createUser(user);
+        return UserMapper.toUserDto(created);
     }
 
     @Override
     public UserDto updateUser(UserDto userDto) {
-        //
-        return null;
+        User userToUpdate = UserMapper.toUser(userDto);
+        Optional<User> updatedOpt = userRepository.updateUser(userToUpdate);
+        return UserMapper.toUserDto(updatedOpt.get());
     }
 
     @Override
     public UserDto getUserById(Long userId) {
-        return null;
+        Optional<User> userOpt = userRepository.getUserById(userId);
+        return UserMapper.toUserDto(userOpt.get());
     }
 
     @Override
     public UserDto deleteUserById(Long userId) {
-        return null;
+        Optional<User> deletedOpt = userRepository.deleteUserById(userId);
+        return UserMapper.toUserDto(deletedOpt.get());
     }
 
     @Override
     public Collection<UserDto> getAllUsers() {
-        return null;
+        return userRepository.getAllUsers().stream()
+                .map(UserMapper::toUserDto)
+                .collect(Collectors.toList());
     }
 }

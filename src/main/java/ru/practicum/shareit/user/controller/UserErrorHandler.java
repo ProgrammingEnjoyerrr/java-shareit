@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.controllers;
+package ru.practicum.shareit.user.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,9 +13,9 @@ import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RestControllerAdvice(value = "ru.practicum.shareit.item.controllers")
+@RestControllerAdvice(value = "ru.practicum.shareit.user.controller")
 @Slf4j
-public class ErrorHandler {
+public class UserErrorHandler {
 
     public static final String LOG_ERROR_PLACEHOLDER = "error occurred: {}";
 
