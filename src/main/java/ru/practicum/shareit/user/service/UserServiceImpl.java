@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.mapper.UserMapper;
+import ru.practicum.shareit.user.exception.NonUniqueEmailException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -20,6 +21,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
+
+        boolean isUnique = userRepository.isEmailUnique(user.getEmail());
+        if (!isUnique) {
+            throw new NonUniqueEmailException("уже было");
+        }
 
         User created = userRepository.createUser(user);
         return UserMapper.toUserDto(created);

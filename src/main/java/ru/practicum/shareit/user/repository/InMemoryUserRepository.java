@@ -27,11 +27,18 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> updateUser(User updatedUser) {
-        User oldUser = users.get(updatedUser.getId());
+    public Optional<User> updateUser(User userToUpdate) {
+        User oldUser = users.get(userToUpdate.getId());
 
+        User updatedUser = User.builder()
+                .id(oldUser.getId())
+                .name(userToUpdate.getName() != null ? userToUpdate.getName() : oldUser.getName())
+                .email(userToUpdate.getEmail() != null ? userToUpdate.getEmail() : oldUser.getEmail())
+                .build();
 
-        return Optional.of(oldUser);
+        users.put(oldUser.getId(), updatedUser);
+
+        return Optional.of(updatedUser);
     }
 
     @Override
@@ -53,5 +60,13 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public boolean isUserExists(long userId) {
         return users.containsKey(userId);
+    }
+
+    @Override
+    public boolean isEmailUnique(String email) {
+        Optional<User> found = users.values().stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findAny();
+        return found.isEmpty();
     }
 }

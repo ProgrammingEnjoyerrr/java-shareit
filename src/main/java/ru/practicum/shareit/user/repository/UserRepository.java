@@ -7,9 +7,10 @@ import java.util.Optional;
 
 public interface UserRepository {
     User createUser(User user);
-    Optional<User> updateUser(User user);
+    Optional<User> updateUser(User userToUpdate);
     Optional<User> getUserById(Long userId);
     Optional<User> deleteUserById(Long userId);
     Collection<User> getAllUsers();
     boolean isUserExists(long userId);
+    boolean isEmailUnique(String email);
 }

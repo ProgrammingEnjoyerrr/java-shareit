@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.common.ErrorResponse;
 import ru.practicum.shareit.common.ValidationErrorResponse;
+import ru.practicum.shareit.user.exception.NonUniqueEmailException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.List;
@@ -18,6 +19,12 @@ import java.util.stream.Collectors;
 public class UserErrorHandler {
 
     public static final String LOG_ERROR_PLACEHOLDER = "error occurred: {}";
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleNonUniqueEmailException(final NonUniqueEmailException e) {
+        return commonErrorResponse(e);
+    }
 
 //    @ExceptionHandler
 //    @ResponseStatus(HttpStatus.NOT_FOUND)
