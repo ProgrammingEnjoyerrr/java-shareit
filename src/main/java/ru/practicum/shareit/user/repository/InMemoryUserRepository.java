@@ -1,33 +1,57 @@
 package ru.practicum.shareit.user.repository;
 
-import ru.practicum.shareit.user.User;
+import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
+@Repository
 public class InMemoryUserRepository implements UserRepository {
+
+    private final Map<Long, User> users = new HashMap<>();
+    private long id = 0;
+
     @Override
-    public User createUser(User userDto) {
-        return null;
+    public User createUser(User user) {
+        ++id;
+        User newUser = User.builder()
+                .id(id)
+                .name(user.getName())
+                .email(user.getEmail())
+                .build();
+        users.put(newUser.getId(), newUser);
+        return newUser;
     }
 
     @Override
-    public Optional<User> updateUser(User userDto) {
-        return Optional.empty();
+    public Optional<User> updateUser(User updatedUser) {
+        User oldUser = users.get(updatedUser.getId());
+
+
+        return Optional.of(oldUser);
     }
 
     @Override
     public Optional<User> getUserById(Long userId) {
-        return Optional.empty();
+        return Optional.of(users.get(userId));
     }
 
     @Override
     public Optional<User> deleteUserById(Long userId) {
-        return Optional.empty();
+        User removed = users.remove(userId);
+        return Optional.of(removed);
     }
 
     @Override
     public Collection<User> getAllUsers() {
-        return null;
+        return users.values();
+    }
+
+    @Override
+    public boolean isUserExists(long userId) {
+        return users.containsKey(userId);
     }
 }
