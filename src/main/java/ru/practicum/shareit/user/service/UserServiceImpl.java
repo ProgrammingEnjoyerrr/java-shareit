@@ -3,6 +3,7 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserUpdateDto;
 import ru.practicum.shareit.user.dto.mapper.UserMapper;
 import ru.practicum.shareit.user.exception.NonUniqueEmailException;
 import ru.practicum.shareit.user.model.User;
@@ -32,10 +33,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto updateUser(UserDto userDto) {
-        User userToUpdate = UserMapper.toUser(userDto);
+    public UserUpdateDto updateUser(UserUpdateDto userUpdateDto) {
+        User userToUpdate = UserMapper.toUser(userUpdateDto);
+
         Optional<User> updatedOpt = userRepository.updateUser(userToUpdate);
-        return UserMapper.toUserDto(updatedOpt.get());
+        return UserMapper.toUserUpdateDto(updatedOpt.get());
     }
 
     @Override
