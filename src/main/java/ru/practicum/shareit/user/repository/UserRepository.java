@@ -12,5 +12,5 @@ public interface UserRepository {
     Optional<User> deleteUserById(Long userId);
     Collection<User> getAllUsers();
     boolean isUserExists(long userId);
-    boolean isEmailUnique(String email);
+    boolean isEmailUnique(String email, Long userId);
 }

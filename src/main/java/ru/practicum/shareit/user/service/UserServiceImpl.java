@@ -23,7 +23,7 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
 
-        boolean isUnique = userRepository.isEmailUnique(user.getEmail());
+        boolean isUnique = userRepository.isEmailUnique(user.getEmail(), userDto.getId());
         if (!isUnique) {
             throw new NonUniqueEmailException("уже было");
         }
@@ -35,6 +35,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserUpdateDto updateUser(UserUpdateDto userUpdateDto) {
         User userToUpdate = UserMapper.toUser(userUpdateDto);
+
+        boolean isUnique = userRepository.isEmailUnique(userUpdateDto.getEmail(), userUpdateDto.getId());
+        if (!isUnique) {
+            throw new NonUniqueEmailException("уже было");
+        }
 
         Optional<User> updatedOpt = userRepository.updateUser(userToUpdate);
         return UserMapper.toUserUpdateDto(updatedOpt.get());

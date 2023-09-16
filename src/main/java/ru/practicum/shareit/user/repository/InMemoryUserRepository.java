@@ -63,10 +63,11 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public boolean isEmailUnique(String email) {
+    public boolean isEmailUnique(String email, Long userId) {
         Optional<User> found = users.values().stream()
                 .filter(user -> user.getEmail().equals(email))
                 .findAny();
-        return found.isEmpty();
+
+        return found.map(user -> user.getId().equals(userId)).orElse(true);
     }
 }
