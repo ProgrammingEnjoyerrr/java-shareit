@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.common.ErrorResponse;
 import ru.practicum.shareit.common.ValidationErrorResponse;
 import ru.practicum.shareit.user.exception.NonUniqueEmailException;
+import ru.practicum.shareit.user.exception.UserDoesntExistException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.List;
@@ -26,29 +27,23 @@ public class UserErrorHandler {
         return commonErrorResponse(e);
     }
 
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public ErrorResponse handleUserNotFoundException(final UserNotFoundException e) {
-//        return commonErrorResponse(e);
-//    }
-//
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public ErrorResponse handleFilmNotFoundException(final FilmNotFoundException e) {
-//        return commonErrorResponse(e);
-//    }
-//
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public ErrorResponse handleGenreNotFoundException(final GenreNotFoundException e) {
-//        return commonErrorResponse(e);
-//    }
-//
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public ErrorResponse handleMpaNotFoundException(final MpaNotFoundException e) {
-//        return commonErrorResponse(e);
-//    }
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleUserDoesntExistException(final UserDoesntExistException e) {
+        return commonErrorResponse(e);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleThrowable(final Throwable e) {
+        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
+        return new ErrorResponse(String.format("Произошла непредвиденная ошибка: %s.", e.getMessage()));
+    }
+
+    private ErrorResponse commonErrorResponse(final RuntimeException e) {
+        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
+        return new ErrorResponse(e.getMessage());
+    }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -77,18 +72,5 @@ public class UserErrorHandler {
                 .collect(Collectors.toList());
 
         return new ValidationErrorResponse(violations);
-    }
-
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable e) {
-        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
-        return new ErrorResponse(String.format("Произошла непредвиденная ошибка: %s.", e.getMessage()));
-    }
-
-    private ErrorResponse commonErrorResponse(final RuntimeException e) {
-        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
-        return new ErrorResponse(e.getMessage());
     }
 }
