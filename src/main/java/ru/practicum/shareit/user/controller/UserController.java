@@ -26,12 +26,7 @@ public class UserController {
     @PatchMapping(value = "/{userId}")
     UserUpdateDto updateUser(@PathVariable("userId") Long userId,
                        @RequestBody @Valid UserUpdateDto userUpdateDto) {
-
-        userUpdateDto = UserUpdateDto.builder()
-                .id(userId)
-                .name(userUpdateDto.getName())
-                .email(userUpdateDto.getEmail())
-                .build();
+        userUpdateDto.setId(userId);
         return userService.updateUser(userUpdateDto);
     }
 
