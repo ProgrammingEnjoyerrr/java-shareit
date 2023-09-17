@@ -15,7 +15,7 @@ import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RestControllerAdvice(value = "ru.practicum.shareit.item.controllers")
+@RestControllerAdvice(value = "ru.practicum.shareit.item.controller")
 @Slf4j
 public class ItemErrorHandler {
 

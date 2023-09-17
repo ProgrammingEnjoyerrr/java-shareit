@@ -12,7 +12,7 @@ public class ItemMapper {
                 .id(dto.getId())
                 .name(dto.getName())
                 .description(dto.getDescription())
-                .available(dto.isAvailable())
+                .available(dto.getAvailable())
                 .build();
     }
 
@@ -30,7 +30,7 @@ public class ItemMapper {
                 .id(dto.getId())
                 .name(dto.getName())
                 .description(dto.getDescription())
-                .available(dto.isAvailable())
+                .available(dto.getAvailable())
                 .build();
     }
 

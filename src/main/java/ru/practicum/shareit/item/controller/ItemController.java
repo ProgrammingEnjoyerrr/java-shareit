@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -14,6 +15,7 @@ import java.util.Collection;
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class ItemController {
 
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
@@ -23,6 +25,8 @@ public class ItemController {
     @PostMapping
     ItemDto createItem(@RequestHeader(value = USER_ID_HEADER) Long userId,
                        @RequestBody @Valid ItemDto itemDto) {
+        log.info("got request POST /items");
+        log.info("request body: {}", itemDto);
         return itemService.createItem(userId, itemDto);
     }
 
@@ -30,6 +34,9 @@ public class ItemController {
     ItemUpdateDto updateItem(@RequestHeader(USER_ID_HEADER) Long userId,
                              @PathVariable("itemId") Long itemId,
                              @RequestBody ItemUpdateDto itemUpdateDto) {
+        log.info("got request PATCH /items/{itemId}");
+        log.info("itemId = {}", itemId);
+        log.info("request body: {}", itemUpdateDto);
         return itemService.updateItem(userId, itemId, itemUpdateDto);
     }
 

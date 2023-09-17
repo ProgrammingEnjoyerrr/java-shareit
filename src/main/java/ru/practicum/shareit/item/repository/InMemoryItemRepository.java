@@ -26,6 +26,8 @@ public class InMemoryItemRepository implements ItemRepository {
                 .available(item.getAvailable())
                 .build();
 
+        items.put(newItem.getId(), newItem);
+
         return newItem;
     }
 
