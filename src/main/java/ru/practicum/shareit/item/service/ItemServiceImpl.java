@@ -6,6 +6,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
+import ru.practicum.shareit.item.exception.UserIsNotOwnerException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.exception.UserDoesntExistException;
@@ -27,7 +28,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto createItem(Long userId, ItemDto itemDto) {
         ensureUserExists(userId);
 
-        Item item = ItemMapper.toItem(itemDto);
+        Item item = ItemMapper.toItem(itemDto, userId);
 
         Item created = itemRepository.createItem(item);
 
@@ -38,6 +39,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemUpdateDto updateItem(Long userId, Long itemId, ItemUpdateDto itemUpdateDto) {
         ensureUserExists(userId);
         ensureItemExists(itemId);
+        ensureUserIsOwner(userId, itemId);
 
         itemUpdateDto.setId(itemId);
         Item itemToUpdate = ItemMapper.toItem(itemUpdateDto);
@@ -83,6 +85,13 @@ public class ItemServiceImpl implements ItemService {
     private void ensureItemExists(Long itemId) {
         if (!itemRepository.isItemExists(itemId)) {
             throw new ItemNotFoundException("предмет не найден");
+        }
+    }
+
+    private void ensureUserIsOwner(Long userId, Long itemId) {
+        Item item = itemRepository.getItemById(itemId).get();
+        if (!item.getOwnerId().equals(userId)) {
+            throw new UserIsNotOwnerException("пользователь не является владельцем предмета");
         }
     }
 }

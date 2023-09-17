@@ -24,6 +24,7 @@ public class InMemoryItemRepository implements ItemRepository {
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
+                .ownerId(item.getOwnerId())
                 .build();
 
         items.put(newItem.getId(), newItem);
@@ -36,9 +37,11 @@ public class InMemoryItemRepository implements ItemRepository {
         Item oldItem = items.get(itemToUpdate.getId());
 
         Item updatedItem = Item.builder()
+                .id(oldItem.getId())
                 .name(itemToUpdate.getName() != null ? itemToUpdate.getName() : oldItem.getName())
                 .description(itemToUpdate.getDescription() != null ? itemToUpdate.getDescription() : oldItem.getDescription())
                 .available(itemToUpdate.getAvailable() != null ? itemToUpdate.getAvailable() : oldItem.getAvailable())
+                .ownerId(oldItem.getOwnerId())
                 .build();
 
         items.put(oldItem.getId(), updatedItem);

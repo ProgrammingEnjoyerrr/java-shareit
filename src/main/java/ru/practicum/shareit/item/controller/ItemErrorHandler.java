@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.common.ErrorResponse;
 import ru.practicum.shareit.common.ValidationErrorResponse;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
+import ru.practicum.shareit.item.exception.UserIsNotOwnerException;
 import ru.practicum.shareit.user.exception.UserDoesntExistException;
 
 import javax.validation.ConstraintViolationException;
@@ -30,6 +31,12 @@ public class ItemErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleUserDoesntExistException(final UserDoesntExistException e) {
+        return commonErrorResponse(e);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleUserIsNotOwnerException(final UserIsNotOwnerException e) {
         return commonErrorResponse(e);
     }
 

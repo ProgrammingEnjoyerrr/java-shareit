@@ -7,12 +7,13 @@ import ru.practicum.shareit.item.model.Item;
 
 @UtilityClass
 public class ItemMapper {
-    public static Item toItem(ItemDto dto) {
+    public static Item toItem(ItemDto dto, Long userId) {
         return Item.builder()
                 .id(dto.getId())
                 .name(dto.getName())
                 .description(dto.getDescription())
                 .available(dto.getAvailable())
+                .ownerId(userId)
                 .build();
     }
 
