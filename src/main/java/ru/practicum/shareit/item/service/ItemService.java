@@ -7,8 +7,12 @@ import java.util.Collection;
 
 public interface ItemService {
     ItemDto createItem(Long userId, ItemDto itemDto);
+
     ItemUpdateDto updateItem(Long userId, Long itemId, ItemUpdateDto itemUpdateDto);
-    ItemDto getItemById(Long userId, Long ItemId);
+
+    ItemDto getItemById(Long userId, Long itemId);
+
     Collection<ItemDto> getAllUserItems(Long userId);
+
     Collection<ItemDto> getAvailableItemsByKeyWord(Long userId, String keyWord);
 }

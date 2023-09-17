@@ -63,11 +63,6 @@ public class InMemoryItemRepository implements ItemRepository {
 
     @Override
     public Collection<Item> getAvailableItemsByKeyWord(String keyWord) {
-//        return items.values().stream()
-//                .filter(Item::getAvailable)
-//                .filter(item -> item.getName().contains(keyWord) ||
-//                        item.getDescription().contains(keyWord))
-//                .collect(Collectors.toList());
         return items.values().stream()
                 .filter(Item::getAvailable)
                 .filter(item -> containsIgnoreCase(item.getName(), keyWord) ||
