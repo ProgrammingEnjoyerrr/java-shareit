@@ -1,20 +1,17 @@
 package ru.practicum.shareit.item.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
-import javax.validation.constraints.NotNull;
+import lombok.Setter;
 
 @Builder
 @Getter
-@RequiredArgsConstructor
-public class ItemDto {
-    private final Long id;
-    @NotNull
+@AllArgsConstructor
+public class ItemUpdateDto {
+    @Setter
+    private Long id;
     private final String name;
-    @NotNull
     private final String description;
-    @NotNull
     private final boolean available;
 }

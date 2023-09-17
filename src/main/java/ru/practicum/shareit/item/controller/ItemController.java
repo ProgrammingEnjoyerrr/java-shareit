@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
@@ -20,33 +21,32 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    ItemDto createItem(@RequestHeader(USER_ID_HEADER) Long userId,
+    ItemDto createItem(@RequestHeader(value = USER_ID_HEADER) Long userId,
                        @RequestBody @Valid ItemDto itemDto) {
-
-        return null;
+        return itemService.createItem(userId, itemDto);
     }
 
     @PatchMapping(value = "/{itemId}")
-    ItemDto updateItem(@RequestHeader(USER_ID_HEADER) Long userId,
-                       @PathVariable("itemId") Long itemId,
-                       @RequestBody ItemDto itemDto) {
-        return null;
+    ItemUpdateDto updateItem(@RequestHeader(USER_ID_HEADER) Long userId,
+                             @PathVariable("itemId") Long itemId,
+                             @RequestBody ItemUpdateDto itemUpdateDto) {
+        return itemService.updateItem(userId, itemId, itemUpdateDto);
     }
 
     @GetMapping(value = "/{itemId}")
-    ItemDto getItemByUsedId(@RequestHeader(USER_ID_HEADER) Long userId,
+    ItemDto getItemByUserId(@RequestHeader(USER_ID_HEADER) Long userId,
                             @PathVariable("itemId") Long itemId) {
-        return null;
+        return itemService.getItemById(userId, itemId);
     }
 
     @GetMapping
     Collection<ItemDto> getAllUserItems(@RequestHeader(USER_ID_HEADER) Long userId) {
-        return null;
+        return itemService.getAllUserItems(userId);
     }
 
     @GetMapping(value = "/search")
-    ItemDto getItemBySearch(@RequestHeader(USER_ID_HEADER) Long userId,
-                            @RequestParam String text) {
-        return null;
+    Collection<ItemDto> getAvailableItemsByKeyWord(@RequestHeader(USER_ID_HEADER) Long userId,
+                                       @RequestParam String keyWord) {
+        return itemService.getAvailableItemsByKeyWord(userId, keyWord);
     }
 }

@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.common.ErrorResponse;
 import ru.practicum.shareit.common.ValidationErrorResponse;
+import ru.practicum.shareit.item.exception.ItemNotFoundException;
+import ru.practicum.shareit.user.exception.UserDoesntExistException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.List;
@@ -19,11 +21,17 @@ public class ItemErrorHandler {
 
     public static final String LOG_ERROR_PLACEHOLDER = "error occurred: {}";
 
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public ErrorResponse handleUserNotFoundException(final UserNotFoundException e) {
-//        return commonErrorResponse(e);
-//    }
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleItemNotFoundException(final ItemNotFoundException e) {
+        return commonErrorResponse(e);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleUserDoesntExistException(final UserDoesntExistException e) {
+        return commonErrorResponse(e);
+    }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
