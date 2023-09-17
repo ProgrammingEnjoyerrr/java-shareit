@@ -62,7 +62,7 @@ public class ItemServiceImpl implements ItemService {
     public Collection<ItemDto> getAllUserItems(Long userId) {
         ensureUserExists(userId);
 
-        return itemRepository.getAllItems().stream()
+        return itemRepository.getAllItems(userId).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -70,6 +70,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Collection<ItemDto> getAvailableItemsByKeyWord(Long userId, String keyWord) {
         ensureUserExists(userId);
+
+
 
         return itemRepository.getAvailableItemsByKeyWord(keyWord).stream()
                 .map(ItemMapper::toItemDto)

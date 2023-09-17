@@ -55,21 +55,32 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public Collection<Item> getAllItems() {
-        return items.values();
+    public Collection<Item> getAllItems(Long userId) {
+        return items.values().stream()
+                .filter(item -> item.getOwnerId().equals(userId))
+                .collect(Collectors.toList());
     }
 
     @Override
     public Collection<Item> getAvailableItemsByKeyWord(String keyWord) {
+//        return items.values().stream()
+//                .filter(Item::getAvailable)
+//                .filter(item -> item.getName().contains(keyWord) ||
+//                        item.getDescription().contains(keyWord))
+//                .collect(Collectors.toList());
         return items.values().stream()
                 .filter(Item::getAvailable)
-                .filter(item -> item.getName().contains(keyWord) ||
-                        item.getDescription().contains(keyWord))
+                .filter(item -> containsIgnoreCase(item.getName(), keyWord) ||
+                        containsIgnoreCase(item.getDescription(), keyWord))
                 .collect(Collectors.toList());
     }
 
     @Override
     public boolean isItemExists(long itemId) {
         return items.containsKey(itemId);
+    }
+
+    private boolean containsIgnoreCase(String lhs, String rhs) {
+        return lhs.toLowerCase().contains(rhs.toLowerCase());
     }
 }

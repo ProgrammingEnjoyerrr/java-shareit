@@ -9,7 +9,9 @@ import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/items")
@@ -53,7 +55,11 @@ public class ItemController {
 
     @GetMapping(value = "/search")
     Collection<ItemDto> getAvailableItemsByKeyWord(@RequestHeader(USER_ID_HEADER) Long userId,
-                                       @RequestParam String keyWord) {
+                                       @RequestParam(name = "text") String keyWord) {
+        if (keyWord.isBlank()) {
+            return new ArrayList<>();
+        }
+
         return itemService.getAvailableItemsByKeyWord(userId, keyWord);
     }
 }
