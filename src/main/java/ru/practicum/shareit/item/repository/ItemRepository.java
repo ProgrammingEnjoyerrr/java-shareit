@@ -10,11 +10,11 @@ public interface ItemRepository {
 
     Optional<Item> updateItem(Item itemToUpdate);
 
-    Optional<Item> getItemById(long itemId);
+    Optional<Item> getItemById(Long itemId);
 
     Collection<Item> getAllItems(Long userId);
 
     Collection<Item> getAvailableItemsByKeyWord(String keyWord);
 
-    boolean isItemExists(long itemId);
+    boolean isItemExists(Long itemId);
 }

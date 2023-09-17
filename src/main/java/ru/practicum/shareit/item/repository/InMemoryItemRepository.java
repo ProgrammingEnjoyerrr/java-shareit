@@ -50,7 +50,7 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public Optional<Item> getItemById(long itemId) {
+    public Optional<Item> getItemById(Long itemId) {
         return Optional.of(items.get(itemId));
     }
 
@@ -71,7 +71,7 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public boolean isItemExists(long itemId) {
+    public boolean isItemExists(Long itemId) {
         return items.containsKey(itemId);
     }
 
