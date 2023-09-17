@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.dto.mappers;
+package ru.practicum.shareit.item.dto.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.item.dto.ItemDto;

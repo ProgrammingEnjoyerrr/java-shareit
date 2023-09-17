@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.controllers;
+package ru.practicum.shareit.item.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice(value = "ru.practicum.shareit.item.controllers")
 @Slf4j
-public class ErrorHandler {
+public class ItemErrorHandler {
 
     public static final String LOG_ERROR_PLACEHOLDER = "error occurred: {}";
 
@@ -24,24 +24,18 @@ public class ErrorHandler {
 //    public ErrorResponse handleUserNotFoundException(final UserNotFoundException e) {
 //        return commonErrorResponse(e);
 //    }
-//
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public ErrorResponse handleFilmNotFoundException(final FilmNotFoundException e) {
-//        return commonErrorResponse(e);
-//    }
-//
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public ErrorResponse handleGenreNotFoundException(final GenreNotFoundException e) {
-//        return commonErrorResponse(e);
-//    }
-//
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public ErrorResponse handleMpaNotFoundException(final MpaNotFoundException e) {
-//        return commonErrorResponse(e);
-//    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleThrowable(final Throwable e) {
+        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
+        return new ErrorResponse(String.format("Произошла непредвиденная ошибка: %s.", e.getMessage()));
+    }
+
+    private ErrorResponse commonErrorResponse(final RuntimeException e) {
+        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
+        return new ErrorResponse(e.getMessage());
+    }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -70,18 +64,5 @@ public class ErrorHandler {
                 .collect(Collectors.toList());
 
         return new ValidationErrorResponse(violations);
-    }
-
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable e) {
-        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
-        return new ErrorResponse(String.format("Произошла непредвиденная ошибка: %s.", e.getMessage()));
-    }
-
-    private ErrorResponse commonErrorResponse(final RuntimeException e) {
-        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
-        return new ErrorResponse(e.getMessage());
     }
 }
