@@ -33,6 +33,7 @@ public class ItemServiceImpl implements ItemService {
 
         Item created = itemRepository.createItem(item);
 
+        log.info("предмет создан; id: {}", created.getId());
         return ItemMapper.toItemDto(created);
     }
 
@@ -47,6 +48,7 @@ public class ItemServiceImpl implements ItemService {
 
         Item updated = itemRepository.updateItem(itemToUpdate);
 
+        log.info("предмет с id {} обновлен", updated.getId());
         return ItemMapper.toItemUpdateDto(updated);
     }
 
@@ -56,6 +58,7 @@ public class ItemServiceImpl implements ItemService {
         ensureItemExists(itemId);
 
         Item item = itemRepository.getItemById(itemId);
+        log.info("найден предмет с id {}", item.getId());
         return ItemMapper.toItemDto(item);
     }
 
@@ -63,6 +66,7 @@ public class ItemServiceImpl implements ItemService {
     public Collection<ItemDto> getAllUserItems(Long userId) {
         ensureUserExists(userId);
 
+        log.info("найдены все предметы пользователя {}", userId);
         return itemRepository.getAllItems(userId).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
@@ -72,8 +76,7 @@ public class ItemServiceImpl implements ItemService {
     public Collection<ItemDto> getAvailableItemsByKeyWord(Long userId, String keyWord) {
         ensureUserExists(userId);
 
-
-
+        log.info("найдены предметы пользователя {} по ключевому слову {}", userId, keyWord);
         return itemRepository.getAvailableItemsByKeyWord(keyWord).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
@@ -85,6 +88,8 @@ public class ItemServiceImpl implements ItemService {
             log.error(message);
             throw new UserNotFoundException(message);
         }
+
+        log.info("пользователь с id {} найден", userId);
     }
 
     private void ensureItemExists(Long itemId) {
@@ -93,14 +98,19 @@ public class ItemServiceImpl implements ItemService {
             log.error(message);
             throw new ItemNotFoundException(message);
         }
+
+        log.info("предмет с id {} найден", itemId);
     }
 
     private void ensureUserIsOwner(Long userId, Long itemId) {
         Item item = itemRepository.getItemById(itemId);
         if (!item.getOwnerId().equals(userId)) {
-            String message = "пользователь " + userId + " не является владельцем предмета " + itemId;
+            String message = "пользователь с id " + userId +
+                    " не является владельцем предмета с id " + itemId;
             log.error(message);
             throw new UserIsNotOwnerException(message);
         }
+
+        log.info("пользователь с id {} является владельцем предмета с id {}", userId, itemId);
     }
 }
