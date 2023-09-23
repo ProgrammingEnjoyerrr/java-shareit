@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
@@ -80,20 +82,26 @@ public class ItemServiceImpl implements ItemService {
 
     private void ensureUserExists(Long userId) {
         if (!userRepository.isUserExists(userId)) {
-            throw new UserNotFoundException("пользователь с таким id не существует");
+            String message = "пользователь с id " + userId + " не существует";
+            log.error(message);
+            throw new UserNotFoundException(message);
         }
     }
 
     private void ensureItemExists(Long itemId) {
         if (!itemRepository.isItemExists(itemId)) {
-            throw new ItemNotFoundException("предмет не найден");
+            String message = "предмет с id " + itemId + " не существует";
+            log.error(message);
+            throw new ItemNotFoundException(message);
         }
     }
 
     private void ensureUserIsOwner(Long userId, Long itemId) {
         Item item = itemRepository.getItemById(itemId).get();
         if (!item.getOwnerId().equals(userId)) {
-            throw new UserIsNotOwnerException("пользователь не является владельцем предмета");
+            String message = "пользователь " + userId + " не является владельцем предмета " + itemId;
+            log.error(message);
+            throw new UserIsNotOwnerException(message);
         }
     }
 }
