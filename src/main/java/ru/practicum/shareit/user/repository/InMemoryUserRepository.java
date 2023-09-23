@@ -27,7 +27,7 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> updateUser(User userToUpdate) {
+    public User updateUser(User userToUpdate) {
         User oldUser = users.get(userToUpdate.getId());
 
         User updatedUser = User.builder()
@@ -38,18 +38,17 @@ public class InMemoryUserRepository implements UserRepository {
 
         users.put(oldUser.getId(), updatedUser);
 
-        return Optional.of(updatedUser);
+        return updatedUser;
     }
 
     @Override
-    public Optional<User> getUserById(Long userId) {
-        return Optional.of(users.get(userId));
+    public User getUserById(Long userId) {
+        return users.get(userId);
     }
 
     @Override
-    public Optional<User> deleteUserById(Long userId) {
-        User removed = users.remove(userId);
-        return Optional.of(removed);
+    public User deleteUserById(Long userId) {
+        return users.remove(userId);
     }
 
     @Override

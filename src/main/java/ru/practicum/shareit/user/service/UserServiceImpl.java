@@ -11,7 +11,6 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,8 +45,8 @@ public class UserServiceImpl implements UserService {
             throw new NonUniqueEmailException("уже было");
         }
 
-        Optional<User> updatedOpt = userRepository.updateUser(userToUpdate);
-        return UserMapper.toUserUpdateDto(updatedOpt.get());
+        User updated = userRepository.updateUser(userToUpdate);
+        return UserMapper.toUserUpdateDto(updated);
     }
 
     @Override
@@ -56,8 +55,8 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException("пользователь с таким id не существует");
         }
 
-        Optional<User> userOpt = userRepository.getUserById(userId);
-        return UserMapper.toUserDto(userOpt.get());
+        User user = userRepository.getUserById(userId);
+        return UserMapper.toUserDto(user);
     }
 
     @Override
@@ -66,8 +65,8 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException("пользователь с таким id не существует");
         }
 
-        Optional<User> deletedOpt = userRepository.deleteUserById(userId);
-        return UserMapper.toUserDto(deletedOpt.get());
+        User deleted = userRepository.deleteUserById(userId);
+        return UserMapper.toUserDto(deleted);
     }
 
     @Override
