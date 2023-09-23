@@ -21,14 +21,14 @@ public abstract class BaseErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable e) {
+    private ErrorResponse handleThrowable(final Throwable e) {
         log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
         return new ErrorResponse(String.format("Произошла непредвиденная ошибка: %s.", e.getMessage()));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ValidationErrorResponse handleConstraintValidationException(ConstraintViolationException e) {
+    private ValidationErrorResponse handleConstraintValidationException(ConstraintViolationException e) {
         log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
 
         final List<ValidationErrorResponse.Violation> violations = e.getConstraintViolations()
@@ -44,7 +44,7 @@ public abstract class BaseErrorHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ValidationErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    private ValidationErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
 
         final List<ValidationErrorResponse.Violation> violations = e.getBindingResult().getFieldErrors()
