@@ -7,6 +7,7 @@ import javax.validation.constraints.Email;
 @Builder
 @Getter
 @AllArgsConstructor
+@ToString
 public class UserUpdateDto {
     @Setter
     private Long id;
