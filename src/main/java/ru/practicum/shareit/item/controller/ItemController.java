@@ -20,6 +20,7 @@ import java.util.Collection;
 public class ItemController {
 
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
+    private static final String USER_ID_HEADER_LOG_PLACEHOLDER = "{}: {}";
 
     private final ItemService itemService;
 
@@ -27,6 +28,7 @@ public class ItemController {
     ItemDto createItem(@RequestHeader(value = USER_ID_HEADER) Long userId,
                        @RequestBody @Valid ItemDto itemDto) {
         log.info("got request POST /items");
+        log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         log.info("request body: {}", itemDto);
         return itemService.createItem(userId, itemDto);
     }
@@ -36,6 +38,7 @@ public class ItemController {
                              @PathVariable("itemId") Long itemId,
                              @RequestBody ItemUpdateDto itemUpdateDto) {
         log.info("got request PATCH /items/{itemId}");
+        log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         log.info("itemId = {}", itemId);
         log.info("request body: {}", itemUpdateDto);
         return itemService.updateItem(userId, itemId, itemUpdateDto);
@@ -44,17 +47,22 @@ public class ItemController {
     @GetMapping(value = "/{itemId}")
     ItemDto getItemByUserId(@RequestHeader(USER_ID_HEADER) Long userId,
                             @PathVariable("itemId") Long itemId) {
+        log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
+        log.info("itemId = {}", itemId);
         return itemService.getItemById(userId, itemId);
     }
 
     @GetMapping
     Collection<ItemDto> getAllUserItems(@RequestHeader(USER_ID_HEADER) Long userId) {
+        log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         return itemService.getAllUserItems(userId);
     }
 
     @GetMapping(value = "/search")
     Collection<ItemDto> getAvailableItemsByKeyWord(@RequestHeader(USER_ID_HEADER) Long userId,
                                                    @RequestParam(name = "text") String keyWord) {
+        log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
+        log.info("text = {}", keyWord);
         if (keyWord.isBlank()) {
             return new ArrayList<>();
         }
