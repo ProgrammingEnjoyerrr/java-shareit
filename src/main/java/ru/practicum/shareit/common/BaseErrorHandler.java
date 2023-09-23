@@ -1,36 +1,22 @@
-package ru.practicum.shareit.user.controller;
+package ru.practicum.shareit.common;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.shareit.common.ErrorResponse;
-import ru.practicum.shareit.common.ValidationErrorResponse;
-import ru.practicum.shareit.user.exception.NonUniqueEmailException;
-import ru.practicum.shareit.user.exception.UserNotFoundException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RestControllerAdvice(value = "ru.practicum.shareit.user.controller")
 @Slf4j
-public class UserErrorHandler {
+public abstract class BaseErrorHandler {
+    private static final String LOG_ERROR_PLACEHOLDER = "error occurred: {}";
 
-    public static final String LOG_ERROR_PLACEHOLDER = "error occurred: {}";
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleNonUniqueEmailException(final NonUniqueEmailException e) {
-        return commonErrorResponse(e);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleUserDoesntExistException(final UserNotFoundException e) {
-        return commonErrorResponse(e);
+    protected ErrorResponse commonErrorResponse(final RuntimeException e) {
+        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
@@ -38,11 +24,6 @@ public class UserErrorHandler {
     public ErrorResponse handleThrowable(final Throwable e) {
         log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
         return new ErrorResponse(String.format("Произошла непредвиденная ошибка: %s.", e.getMessage()));
-    }
-
-    private ErrorResponse commonErrorResponse(final RuntimeException e) {
-        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
-        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

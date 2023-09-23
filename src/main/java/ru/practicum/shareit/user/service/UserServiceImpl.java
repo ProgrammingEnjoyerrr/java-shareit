@@ -6,7 +6,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
 import ru.practicum.shareit.user.dto.mapper.UserMapper;
 import ru.practicum.shareit.user.exception.NonUniqueEmailException;
-import ru.practicum.shareit.user.exception.UserDoesntExistException;
+import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
         User userToUpdate = UserMapper.toUser(userUpdateDto);
 
         if (!userRepository.isUserExists(userToUpdate.getId())) {
-            throw new UserDoesntExistException("пользователь с таким id не существует");
+            throw new UserNotFoundException("пользователь с таким id не существует");
         }
 
         boolean isUnique = userRepository.isEmailUnique(userUpdateDto.getEmail(), userUpdateDto.getId());
@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(Long userId) {
         if (!userRepository.isUserExists(userId)) {
-            throw new UserDoesntExistException("пользователь с таким id не существует");
+            throw new UserNotFoundException("пользователь с таким id не существует");
         }
 
         Optional<User> userOpt = userRepository.getUserById(userId);
@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto deleteUserById(Long userId) {
         if (!userRepository.isUserExists(userId)) {
-            throw new UserDoesntExistException("пользователь с таким id не существует");
+            throw new UserNotFoundException("пользователь с таким id не существует");
         }
 
         Optional<User> deletedOpt = userRepository.deleteUserById(userId);

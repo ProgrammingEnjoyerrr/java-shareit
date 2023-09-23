@@ -9,7 +9,7 @@ import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.exception.UserIsNotOwnerException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.exception.UserDoesntExistException;
+import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collection;
@@ -80,7 +80,7 @@ public class ItemServiceImpl implements ItemService {
 
     private void ensureUserExists(Long userId) {
         if (!userRepository.isUserExists(userId)) {
-            throw new UserDoesntExistException("пользователь с таким id не существует");
+            throw new UserNotFoundException("пользователь с таким id не существует");
         }
     }
 

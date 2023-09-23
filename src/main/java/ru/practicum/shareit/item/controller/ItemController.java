@@ -47,6 +47,7 @@ public class ItemController {
     @GetMapping(value = "/{itemId}")
     ItemDto getItemByUserId(@RequestHeader(USER_ID_HEADER) Long userId,
                             @PathVariable("itemId") Long itemId) {
+        log.info("got request GET /items/{itemId}");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         log.info("itemId = {}", itemId);
         return itemService.getItemById(userId, itemId);
@@ -54,6 +55,7 @@ public class ItemController {
 
     @GetMapping
     Collection<ItemDto> getAllUserItems(@RequestHeader(USER_ID_HEADER) Long userId) {
+        log.info("got request GET /items");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         return itemService.getAllUserItems(userId);
     }
@@ -61,6 +63,7 @@ public class ItemController {
     @GetMapping(value = "/search")
     Collection<ItemDto> getAvailableItemsByKeyWord(@RequestHeader(USER_ID_HEADER) Long userId,
                                                    @RequestParam(name = "text") String keyWord) {
+        log.info("got request GET /items/search");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         log.info("text = {}", keyWord);
         if (keyWord.isBlank()) {
