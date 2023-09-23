@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -23,12 +25,11 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
 
-        boolean isUnique = userRepository.isEmailUnique(user.getEmail(), userDto.getId());
-        if (!isUnique) {
-            throw new NonUniqueEmailException("уже было");
-        }
+        ensureEmailUnique(user.getEmail(), userDto.getId());
 
         User created = userRepository.createUser(user);
+
+        log.info("пользователь создан; id: {}", created.getId());
         return UserMapper.toUserDto(created);
     }
 
@@ -36,36 +37,32 @@ public class UserServiceImpl implements UserService {
     public UserUpdateDto updateUser(UserUpdateDto userUpdateDto) {
         User userToUpdate = UserMapper.toUser(userUpdateDto);
 
-        if (!userRepository.isUserExists(userToUpdate.getId())) {
-            throw new UserNotFoundException("пользователь с таким id не существует");
-        }
-
-        boolean isUnique = userRepository.isEmailUnique(userUpdateDto.getEmail(), userUpdateDto.getId());
-        if (!isUnique) {
-            throw new NonUniqueEmailException("уже было");
-        }
+        ensureUserExists(userToUpdate.getId());
+        ensureEmailUnique(userUpdateDto.getEmail(), userUpdateDto.getId());
 
         User updated = userRepository.updateUser(userToUpdate);
+
+        log.info("пользователь с id {} обновлен", updated.getId());
         return UserMapper.toUserUpdateDto(updated);
     }
 
     @Override
     public UserDto getUserById(Long userId) {
-        if (!userRepository.isUserExists(userId)) {
-            throw new UserNotFoundException("пользователь с таким id не существует");
-        }
+        ensureUserExists(userId);
 
         User user = userRepository.getUserById(userId);
+
+        log.info("найден пользователь с id {}", user.getId());
         return UserMapper.toUserDto(user);
     }
 
     @Override
     public UserDto deleteUserById(Long userId) {
-        if (!userRepository.isUserExists(userId)) {
-            throw new UserNotFoundException("пользователь с таким id не существует");
-        }
+        ensureUserExists(userId);
 
         User deleted = userRepository.deleteUserById(userId);
+
+        log.info("пользователь с id {} удалён", deleted.getId());
         return UserMapper.toUserDto(deleted);
     }
 
@@ -74,5 +71,23 @@ public class UserServiceImpl implements UserService {
         return userRepository.getAllUsers().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
+    }
+
+    private void ensureUserExists(Long userId) {
+        if (!userRepository.isUserExists(userId)) {
+            String message = "пользователь с id " + userId + " не существует";
+            log.error(message);
+            throw new UserNotFoundException(message);
+        }
+
+        log.info("пользователь с id {} найден", userId);
+    }
+
+    private void ensureEmailUnique(String email, Long userId) {
+        if (!userRepository.isEmailUnique(email, userId)) {
+            String message = "Email " + email + " уже занят";
+            log.error(message);
+            throw new NonUniqueEmailException(message);
+        }
     }
 }
