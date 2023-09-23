@@ -6,7 +6,6 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -33,7 +32,7 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public Optional<Item> updateItem(Item itemToUpdate) {
+    public Item updateItem(Item itemToUpdate) {
         Item oldItem = items.get(itemToUpdate.getId());
 
         Item updatedItem = Item.builder()
@@ -46,12 +45,12 @@ public class InMemoryItemRepository implements ItemRepository {
 
         items.put(oldItem.getId(), updatedItem);
 
-        return Optional.of(updatedItem);
+        return updatedItem;
     }
 
     @Override
-    public Optional<Item> getItemById(Long itemId) {
-        return Optional.of(items.get(itemId));
+    public Item getItemById(Long itemId) {
+        return items.get(itemId);
     }
 
     @Override

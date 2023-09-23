@@ -3,14 +3,13 @@ package ru.practicum.shareit.item.repository;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.Collection;
-import java.util.Optional;
 
 public interface ItemRepository {
     Item createItem(Item item);
 
-    Optional<Item> updateItem(Item itemToUpdate);
+    Item updateItem(Item itemToUpdate);
 
-    Optional<Item> getItemById(Long itemId);
+    Item getItemById(Long itemId);
 
     Collection<Item> getAllItems(Long userId);
 

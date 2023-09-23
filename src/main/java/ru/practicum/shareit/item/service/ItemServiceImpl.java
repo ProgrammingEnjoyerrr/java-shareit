@@ -14,7 +14,6 @@ import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,9 +45,9 @@ public class ItemServiceImpl implements ItemService {
         itemUpdateDto.setId(itemId);
         Item itemToUpdate = ItemMapper.toItem(itemUpdateDto);
 
-        Optional<Item> updatedOpt = itemRepository.updateItem(itemToUpdate);
+        Item updated = itemRepository.updateItem(itemToUpdate);
 
-        return ItemMapper.toItemUpdateDto(updatedOpt.get());
+        return ItemMapper.toItemUpdateDto(updated);
     }
 
     @Override
@@ -56,8 +55,8 @@ public class ItemServiceImpl implements ItemService {
         ensureUserExists(userId);
         ensureItemExists(itemId);
 
-        Optional<Item> itemOpt = itemRepository.getItemById(itemId);
-        return ItemMapper.toItemDto(itemOpt.get());
+        Item item = itemRepository.getItemById(itemId);
+        return ItemMapper.toItemDto(item);
     }
 
     @Override
@@ -97,7 +96,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void ensureUserIsOwner(Long userId, Long itemId) {
-        Item item = itemRepository.getItemById(itemId).get();
+        Item item = itemRepository.getItemById(itemId);
         if (!item.getOwnerId().equals(userId)) {
             String message = "пользователь " + userId + " не является владельцем предмета " + itemId;
             log.error(message);
