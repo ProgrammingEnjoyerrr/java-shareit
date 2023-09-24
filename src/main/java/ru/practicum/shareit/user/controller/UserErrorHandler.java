@@ -17,12 +17,12 @@ public class UserErrorHandler extends BaseErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleNonUniqueEmailException(final NonUniqueEmailException e) {
-        return commonErrorResponse(e);
+        return commonErrorResponse(e, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleUserNotFoundException(final UserNotFoundException e) {
-        return commonErrorResponse(e);
+        return commonErrorResponse(e, HttpStatus.NOT_FOUND);
     }
 }

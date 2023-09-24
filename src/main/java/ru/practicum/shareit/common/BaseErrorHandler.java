@@ -12,24 +12,22 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class BaseErrorHandler {
-    private static final String LOG_ERROR_PLACEHOLDER = "error occurred: {}";
-
-    protected ErrorResponse commonErrorResponse(final RuntimeException e) {
-        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
+    protected ErrorResponse commonErrorResponse(final Throwable e, final HttpStatus status) {
+        logError(e, status);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     private ErrorResponse handleThrowable(final Throwable e) {
-        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
+        logError(e, HttpStatus.INTERNAL_SERVER_ERROR);
         return new ErrorResponse(String.format("Произошла непредвиденная ошибка: %s.", e.getMessage()));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     private ValidationErrorResponse handleConstraintValidationException(ConstraintViolationException e) {
-        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
+        logError(e, HttpStatus.BAD_REQUEST);
 
         final List<ValidationErrorResponse.Violation> violations = e.getConstraintViolations()
                 .stream()
@@ -45,7 +43,7 @@ public abstract class BaseErrorHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     private ValidationErrorResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        log.error(LOG_ERROR_PLACEHOLDER, e.getMessage(), e);
+        logError(e, HttpStatus.BAD_REQUEST);
 
         final List<ValidationErrorResponse.Violation> violations = e.getBindingResult().getFieldErrors()
                 .stream()
@@ -53,5 +51,10 @@ public abstract class BaseErrorHandler {
                 .collect(Collectors.toList());
 
         return new ValidationErrorResponse(violations);
+    }
+
+    private void logError(final Throwable e, final HttpStatus status) {
+        log.error("{} {}", status.value(), status.getReasonPhrase());
+        log.error("thrown {} : {}", e.getClass().getCanonicalName(), e.getMessage());
     }
 }
