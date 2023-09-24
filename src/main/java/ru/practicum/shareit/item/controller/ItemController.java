@@ -25,7 +25,7 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    ItemDto createItem(@RequestHeader(value = USER_ID_HEADER) Long userId,
+    public ItemDto createItem(@RequestHeader(value = USER_ID_HEADER) Long userId,
                        @RequestBody @Valid ItemDto itemDto) {
         log.info("got request POST /items");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
@@ -34,7 +34,7 @@ public class ItemController {
     }
 
     @PatchMapping(value = "/{itemId}")
-    ItemUpdateDto updateItem(@RequestHeader(USER_ID_HEADER) Long userId,
+    public ItemUpdateDto updateItem(@RequestHeader(USER_ID_HEADER) Long userId,
                              @PathVariable("itemId") Long itemId,
                              @RequestBody ItemUpdateDto itemUpdateDto) {
         log.info("got request PATCH /items/{itemId}");
@@ -45,7 +45,7 @@ public class ItemController {
     }
 
     @GetMapping(value = "/{itemId}")
-    ItemDto getItemByUserId(@RequestHeader(USER_ID_HEADER) Long userId,
+    public ItemDto getItemByUserId(@RequestHeader(USER_ID_HEADER) Long userId,
                             @PathVariable("itemId") Long itemId) {
         log.info("got request GET /items/{itemId}");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
@@ -54,14 +54,14 @@ public class ItemController {
     }
 
     @GetMapping
-    Collection<ItemDto> getAllUserItems(@RequestHeader(USER_ID_HEADER) Long userId) {
+    public Collection<ItemDto> getAllUserItems(@RequestHeader(USER_ID_HEADER) Long userId) {
         log.info("got request GET /items");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         return itemService.getAllUserItems(userId);
     }
 
     @GetMapping(value = "/search")
-    Collection<ItemDto> getAvailableItemsByKeyWord(@RequestHeader(USER_ID_HEADER) Long userId,
+    public Collection<ItemDto> getAvailableItemsByKeyWord(@RequestHeader(USER_ID_HEADER) Long userId,
                                                    @RequestParam(name = "text") String keyWord) {
         log.info("got request GET /items/search");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);

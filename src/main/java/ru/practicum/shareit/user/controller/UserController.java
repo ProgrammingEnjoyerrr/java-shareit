@@ -24,7 +24,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    UserDto createUser(@RequestBody @Valid UserDto userDto) {
+    public UserDto createUser(@RequestBody @Valid UserDto userDto) {
         log.info("got request POST /users");
         log.info(REQUEST_BODY_LOG_PLACEHOLDER, userDto);
 
@@ -32,7 +32,7 @@ public class UserController {
     }
 
     @PatchMapping(value = "/{userId}")
-    UserUpdateDto updateUser(@PathVariable("userId") Long userId,
+    public UserUpdateDto updateUser(@PathVariable("userId") Long userId,
                              @RequestBody @Valid UserUpdateDto userUpdateDto) {
         log.info("got request PATCH /users/{userId}");
         log.info(USER_ID_LOG_PLACEHOLDER, userId);
@@ -43,7 +43,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/{userId}")
-    UserDto getUserById(@PathVariable("userId") Long userId) {
+    public UserDto getUserById(@PathVariable("userId") Long userId) {
         log.info("got request GET /users/{userId}");
         log.info(USER_ID_LOG_PLACEHOLDER, userId);
 
@@ -51,7 +51,7 @@ public class UserController {
     }
 
     @DeleteMapping(value = "/{userId}")
-    UserDto deleteUserById(@PathVariable("userId") Long userId) {
+    public UserDto deleteUserById(@PathVariable("userId") Long userId) {
         log.info("got request DELETE /users/{userId}");
         log.info(USER_ID_LOG_PLACEHOLDER, userId);
 
@@ -59,7 +59,7 @@ public class UserController {
     }
 
     @GetMapping
-    Collection<UserDto> getAllUsers() {
+    public Collection<UserDto> getAllUsers() {
         log.info("got request GET /users");
 
         return userService.getAllUsers();
