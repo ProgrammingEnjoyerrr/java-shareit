@@ -31,7 +31,7 @@ public class ItemServiceImpl implements ItemService {
 
         Item item = ItemMapper.toItem(itemDto, userId);
 
-        Item created = itemRepository.createItem(item);
+        Item created = itemRepository.save(item);
 
         log.info("предмет создан; id: {}", created.getId());
         return ItemMapper.toItemDto(created);
@@ -39,14 +39,18 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemUpdateDto updateItem(Long userId, Long itemId, ItemUpdateDto itemUpdateDto) {
+        Item oldItem = itemRepository.findById(itemId)
+                .orElseThrow(() -> generateItemNotFoundException(itemId));
+
         ensureUserExists(userId);
-        ensureItemExists(itemId);
         ensureUserIsOwner(userId, itemId);
 
         itemUpdateDto.setId(itemId);
-        Item itemToUpdate = ItemMapper.toItem(itemUpdateDto);
 
-        Item updated = itemRepository.updateItem(itemToUpdate);
+        Item itemToUpdate = ItemMapper.toItem(itemUpdateDto);
+        itemToUpdate = mapItemWithNullFields(oldItem, itemToUpdate);
+
+        Item updated = itemRepository.save(itemToUpdate);
 
         log.info("предмет с id {} обновлен", updated.getId());
         return ItemMapper.toItemUpdateDto(updated);
@@ -55,9 +59,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto getItemById(Long userId, Long itemId) {
         ensureUserExists(userId);
-        ensureItemExists(itemId);
 
-        Item item = itemRepository.getItemById(itemId);
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> generateItemNotFoundException(itemId));
         log.info("найден предмет с id {}", item.getId());
         return ItemMapper.toItemDto(item);
     }
@@ -67,7 +71,7 @@ public class ItemServiceImpl implements ItemService {
         ensureUserExists(userId);
 
         log.info("найдены все предметы пользователя {}", userId);
-        return itemRepository.getAllItems(userId).stream()
+        return itemRepository.findAllByOwnerId(userId).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -77,7 +81,7 @@ public class ItemServiceImpl implements ItemService {
         ensureUserExists(userId);
 
         log.info("найдены предметы пользователя {} по ключевому слову {}", userId, keyWord);
-        return itemRepository.getAvailableItemsByKeyWord(keyWord).stream()
+        return itemRepository.findAllByAvailableTrueAndDescriptionContainingIgnoreCase(keyWord).stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
@@ -93,7 +97,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void ensureItemExists(Long itemId) {
-        if (!itemRepository.isItemExists(itemId)) {
+        if (!itemRepository.existsById(itemId)) {
             String message = "предмет с id " + itemId + " не существует";
             log.error(message);
             throw new ItemNotFoundException(message);
@@ -103,7 +107,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void ensureUserIsOwner(Long userId, Long itemId) {
-        Item item = itemRepository.getItemById(itemId);
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> generateItemNotFoundException(itemId));
         if (!item.getOwnerId().equals(userId)) {
             String message = "пользователь с id " + userId +
                     " не является владельцем предмета с id " + itemId;
@@ -112,5 +117,21 @@ public class ItemServiceImpl implements ItemService {
         }
 
         log.info("пользователь с id {} является владельцем предмета с id {}", userId, itemId);
+    }
+
+    private Item mapItemWithNullFields(final Item oldItem, final Item itemToUpdate) {
+        return Item.builder()
+                .id(oldItem.getId())
+                .name(itemToUpdate.getName() != null ? itemToUpdate.getName() : oldItem.getName())
+                .description(itemToUpdate.getDescription() != null ? itemToUpdate.getDescription() : oldItem.getDescription())
+                .available(itemToUpdate.getAvailable() != null ? itemToUpdate.getAvailable() : oldItem.getAvailable())
+                .ownerId(oldItem.getOwnerId())
+                .build();
+    }
+
+    private ItemNotFoundException generateItemNotFoundException(long itemId) {
+        String message = "предмет с id " + itemId + " не существует";
+        log.error(message);
+        return new ItemNotFoundException(message);
     }
 }
