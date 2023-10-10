@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.booking.exception.BookingDatesValidatorException;
+import ru.practicum.shareit.booking.exception.BookingNotFoundException;
 import ru.practicum.shareit.booking.exception.ItemIsUnavailableException;
 import ru.practicum.shareit.common.BaseErrorHandler;
 import ru.practicum.shareit.common.ErrorResponse;
@@ -36,5 +37,11 @@ public class BookingErrorHandler extends BaseErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBookingDatesValidatorException(final BookingDatesValidatorException e) {
         return commonErrorResponse(e, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleBookingNotFoundException(final BookingNotFoundException e) {
+        return commonErrorResponse(e, HttpStatus.NOT_FOUND);
     }
 }

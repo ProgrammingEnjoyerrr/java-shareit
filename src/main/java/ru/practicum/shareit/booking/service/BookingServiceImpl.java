@@ -5,15 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingCreateRequestDto;
 import ru.practicum.shareit.booking.dto.BookingCreateResponseDto;
+import ru.practicum.shareit.booking.exception.BookingNotFoundException;
 import ru.practicum.shareit.booking.exception.ItemIsUnavailableException;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 @Service
@@ -59,6 +60,37 @@ public class BookingServiceImpl implements BookingService {
         return response;
     }
 
+    @Override
+    public BookingCreateResponseDto refineBooking(Long bookingId, Boolean approved) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> generateBookingNotFoundException(bookingId));
+
+        BookingStatus newStatus = Boolean.TRUE.equals(approved)
+                ? BookingStatus.APPROVED
+                : BookingStatus.REJECTED;
+        booking.setStatus(newStatus);
+
+        Booking updated = bookingRepository.save(booking);
+
+        BookingCreateResponseDto response = new BookingCreateResponseDto();
+        response.setId(updated.getId());
+        response.setStart(updated.getStartDate());
+        response.setEnd(updated.getEndDate());
+        response.setStatus(updated.getStatus());
+
+        long userId = updated.getBookerId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> generateUserNotFoundException(userId));
+        response.setBooker(user);
+
+        long itemId = updated.getItemId();
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> generateItemNotFoundException(itemId));
+        response.setItem(item);
+
+        return response;
+    }
+
     private UserNotFoundException generateUserNotFoundException(long userId) {
         String message = "пользователь с id " + userId + " не существует";
         log.error(message);
@@ -69,5 +101,11 @@ public class BookingServiceImpl implements BookingService {
         String message = "предмет с id " + itemId + " не существует";
         log.error(message);
         return new ItemNotFoundException(message);
+    }
+
+    private BookingNotFoundException generateBookingNotFoundException(long bookingId) {
+        String message = "бронирование с id " + bookingId + " не существует";
+        log.error(message);
+        return new BookingNotFoundException(message);
     }
 }

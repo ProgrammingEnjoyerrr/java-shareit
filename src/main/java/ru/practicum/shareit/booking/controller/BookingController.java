@@ -32,4 +32,13 @@ public class BookingController {
 
         return bookingService.addBooking(userId, bookingCreateRequestDto);
     }
+
+    @PatchMapping(value = "/{bookingId}")
+    public BookingCreateResponseDto refineBooking(@PathVariable("bookingId") Long bookingId,
+                              @RequestParam(name = "approved") Boolean approved) {
+        log.info("got request PATCH /bookings/{bookingId}?approved={}", approved);
+        log.info("bookingId = {}, approved = {}", bookingId, approved);
+
+        return bookingService.refineBooking(bookingId, approved);
+    }
 }
