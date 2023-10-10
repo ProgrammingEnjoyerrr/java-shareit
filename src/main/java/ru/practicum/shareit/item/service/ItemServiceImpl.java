@@ -83,7 +83,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void ensureUserExists(Long userId) {
-        if (!userRepository.isUserExists(userId)) {
+        if (!userRepository.existsById(userId)) {
             String message = "пользователь с id " + userId + " не существует";
             log.error(message);
             throw new UserNotFoundException(message);
