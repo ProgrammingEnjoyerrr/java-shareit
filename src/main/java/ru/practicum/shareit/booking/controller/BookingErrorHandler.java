@@ -66,4 +66,10 @@ public class BookingErrorHandler extends BaseErrorHandler {
     public ErrorResponse handleUserIsNotOwnerException(final UserIsNotOwnerException e) {
         return commonErrorResponse(e, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleUserIsOwnerException(final UserIsOwnerException e) {
+        return commonErrorResponse(e, HttpStatus.NOT_FOUND);
+    }
 }

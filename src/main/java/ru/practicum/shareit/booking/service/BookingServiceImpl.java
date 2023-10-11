@@ -43,6 +43,13 @@ public class BookingServiceImpl implements BookingService {
             throw new ItemIsUnavailableException("предмет с id " + itemId + " не доступен");
         }
 
+        Long ownerId = item.getOwnerId();
+        if (userId.equals(ownerId)) {
+            String message = "Пользователь с id = {" + userId + "} и так является владельцем предместа с id = {" + itemId + "}";
+            log.error(message);
+            throw new UserIsOwnerException(message);
+        }
+
         BookingDatesValidator.validate(bookingCreateRequestDto);
 
         Booking booking = new Booking();
