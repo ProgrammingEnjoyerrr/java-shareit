@@ -44,9 +44,9 @@ public class BookingErrorHandler extends BaseErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleForbiddenAccessException(final ForbiddenAccessException e) {
-        return commonErrorResponse(e, HttpStatus.FORBIDDEN);
+        return commonErrorResponse(e, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
