@@ -98,15 +98,16 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> generateBookingNotFoundException(bookingId));
 
-        User booker = userRepository.findById(userId)
-                .orElseThrow(() -> generateUserNotFoundException(userId));
-
         Long bookerId = booking.getBookerId();
+        User booker = userRepository.findById(bookerId)
+                .orElseThrow(() -> generateUserNotFoundException(bookerId));
+
         Long itemId = booking.getItemId();
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
         Long ownerId = item.getOwnerId();
-        if (!bookerId.equals(userId) && (!ownerId.equals(userId))) {
+        log.info("userId = {}, bookerId = {}, ownerId = {}", userId, bookerId, ownerId);
+        if (!userId.equals(bookerId) && (!userId.equals(ownerId))) {
             String message = "Получение данных о конкретном бронировании может быть выполнено " +
                     "либо автором бронирования, либо владельцем вещи, к которой относится бронирование";
             log.error(message);
