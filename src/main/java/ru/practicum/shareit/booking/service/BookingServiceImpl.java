@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingCreateRequestDto;
 import ru.practicum.shareit.booking.dto.BookingCreateResponseDto;
 import ru.practicum.shareit.booking.exception.BookingNotFoundException;
+import ru.practicum.shareit.booking.exception.ForbiddenAccessException;
 import ru.practicum.shareit.booking.exception.ItemIsUnavailableException;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -61,7 +62,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingCreateResponseDto refineBooking(Long bookingId, Boolean approved) {
+    public BookingCreateResponseDto refineBooking(Long userIdIgnore, Long bookingId, Boolean approved) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> generateBookingNotFoundException(bookingId));
 
@@ -79,6 +80,7 @@ public class BookingServiceImpl implements BookingService {
         response.setStatus(updated.getStatus());
 
         long userId = updated.getBookerId();
+        log.info("userIdIgnore = {}, userId = {}", userIdIgnore, userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> generateUserNotFoundException(userId));
         response.setBooker(user);
@@ -86,6 +88,37 @@ public class BookingServiceImpl implements BookingService {
         long itemId = updated.getItemId();
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
+        response.setItem(item);
+
+        return response;
+    }
+
+    @Override
+    public BookingCreateResponseDto getBookingData(Long userId, Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> generateBookingNotFoundException(bookingId));
+
+        User booker = userRepository.findById(userId)
+                .orElseThrow(() -> generateUserNotFoundException(userId));
+
+        Long bookerId = booking.getBookerId();
+        Long itemId = booking.getItemId();
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> generateItemNotFoundException(itemId));
+        Long ownerId = item.getOwnerId();
+        if (!bookerId.equals(userId) && (!ownerId.equals(userId))) {
+            String message = "Получение данных о конкретном бронировании может быть выполнено " +
+                    "либо автором бронирования, либо владельцем вещи, к которой относится бронирование";
+            log.error(message);
+            throw new ForbiddenAccessException(message);
+        }
+
+        BookingCreateResponseDto response = new BookingCreateResponseDto();
+        response.setId(booking.getId());
+        response.setStart(booking.getStartDate());
+        response.setEnd(booking.getEndDate());
+        response.setStatus(booking.getStatus());
+        response.setBooker(booker);
         response.setItem(item);
 
         return response;

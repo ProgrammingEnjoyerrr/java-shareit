@@ -34,11 +34,23 @@ public class BookingController {
     }
 
     @PatchMapping(value = "/{bookingId}")
-    public BookingCreateResponseDto refineBooking(@PathVariable("bookingId") Long bookingId,
-                              @RequestParam(name = "approved") Boolean approved) {
+    public BookingCreateResponseDto refineBooking(@RequestHeader(value = USER_ID_HEADER) Long userId,
+                                                  @PathVariable("bookingId") Long bookingId,
+                                                  @RequestParam(name = "approved") Boolean approved) {
         log.info("got request PATCH /bookings/{bookingId}?approved={}", approved);
+        log.info(USER_ID_HEADER_LOG_PLACEHOLDER, userId);
         log.info("bookingId = {}, approved = {}", bookingId, approved);
 
-        return bookingService.refineBooking(bookingId, approved);
+        return bookingService.refineBooking(userId, bookingId, approved);
+    }
+
+    @GetMapping(value = "/{bookingId}")
+    public BookingCreateResponseDto getBookingData(@RequestHeader(value = USER_ID_HEADER) Long userId,
+                                                   @PathVariable("bookingId") Long bookingId) {
+        log.info("got request GET /bookings/{bookingId}");
+        log.info(USER_ID_HEADER_LOG_PLACEHOLDER, userId);
+        log.info("bookingId = {}", bookingId);
+
+        return bookingService.getBookingData(userId, bookingId);
     }
 }
