@@ -54,4 +54,16 @@ public class BookingErrorHandler extends BaseErrorHandler {
     public ErrorResponse handleBookingStateConversionException(final BookingStateConversionException e) {
         return commonErrorResponse(e, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBookingAlreadyRefinedException(final BookingAlreadyRefinedException e) {
+        return commonErrorResponse(e, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleUserIsNotOwnerException(final UserIsNotOwnerException e) {
+        return commonErrorResponse(e, HttpStatus.NOT_FOUND);
+    }
 }

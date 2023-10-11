@@ -5,9 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingCreateRequestDto;
 import ru.practicum.shareit.booking.dto.BookingCreateResponseDto;
-import ru.practicum.shareit.booking.exception.BookingNotFoundException;
-import ru.practicum.shareit.booking.exception.ForbiddenAccessException;
-import ru.practicum.shareit.booking.exception.ItemIsUnavailableException;
+import ru.practicum.shareit.booking.exception.*;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -19,7 +17,8 @@ import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -66,9 +65,27 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingCreateResponseDto refineBooking(Long userIdIgnore, Long bookingId, Boolean approved) {
+    public BookingCreateResponseDto refineBooking(Long userId, Long bookingId, Boolean approved) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> generateBookingNotFoundException(bookingId));
+        BookingStatus currentStatus = booking.getStatus();
+        if (currentStatus.equals(BookingStatus.APPROVED) || currentStatus.equals(BookingStatus.REJECTED)) {
+            String message = "Бронирование уже имеет статус " + currentStatus;
+            log.error(message);
+            throw new BookingAlreadyRefinedException(message);
+        }
+
+        Long itemId = booking.getItemId();
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> generateItemNotFoundException(itemId));
+        Long ownerId = item.getOwnerId();
+
+        if (!userId.equals(ownerId)) {
+            String message = "Подтверждение или отклонение запроса на бронирование может быть выполнено только владельцем вещи; " +
+                    "userId{" + userId + "} != bookerId{" + ownerId + "}";
+            log.error(message);
+            throw new UserIsNotOwnerException(message);
+        }
 
         BookingStatus newStatus = Boolean.TRUE.equals(approved)
                 ? BookingStatus.APPROVED
@@ -83,15 +100,11 @@ public class BookingServiceImpl implements BookingService {
         response.setEnd(updated.getEndDate());
         response.setStatus(updated.getStatus());
 
-        long userId = updated.getBookerId();
-        log.info("userIdIgnore = {}, userId = {}", userIdIgnore, userId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> generateUserNotFoundException(userId));
-        response.setBooker(user);
+        Long bookerId = booking.getBookerId();
+        User booker = userRepository.findById(bookerId)
+                .orElseThrow(() -> generateUserNotFoundException(bookerId));
+        response.setBooker(booker);
 
-        long itemId = updated.getItemId();
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> generateItemNotFoundException(itemId));
         response.setItem(item);
 
         return response;
