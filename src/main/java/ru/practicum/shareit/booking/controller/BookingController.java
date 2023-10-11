@@ -6,9 +6,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingCreateRequestDto;
 import ru.practicum.shareit.booking.dto.BookingCreateResponseDto;
+import ru.practicum.shareit.booking.exception.BookingStateConversionException;
+import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
+import java.util.Collection;
 
 @RestController
 @RequestMapping(path = "/bookings")
@@ -52,5 +55,22 @@ public class BookingController {
         log.info("bookingId = {}", bookingId);
 
         return bookingService.getBookingData(userId, bookingId);
+    }
+
+    @GetMapping
+    public Collection<BookingCreateResponseDto> findAllBookingsForBooker(@RequestHeader(value = USER_ID_HEADER) Long userId,
+                                                                         @RequestParam(name = "state", defaultValue = "ALL") String stateStr) {
+        log.info("got request GET /bookings?state={state}");
+        log.info("state = {}", stateStr);
+        log.info(USER_ID_HEADER_LOG_PLACEHOLDER, userId);
+
+        try {
+            BookingState state = BookingState.valueOf(stateStr);
+            return bookingService.findAllBookingsForBooker(userId, state);
+        } catch (IllegalArgumentException e) {
+            String message = "Ошибка конвертации из строки " + stateStr + " в BookingState: " + e;
+            log.error(message);
+            throw new BookingStateConversionException(message);
+        }
     }
 }

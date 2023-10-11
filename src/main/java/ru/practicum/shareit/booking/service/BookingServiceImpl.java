@@ -9,6 +9,7 @@ import ru.practicum.shareit.booking.exception.BookingNotFoundException;
 import ru.practicum.shareit.booking.exception.ForbiddenAccessException;
 import ru.practicum.shareit.booking.exception.ItemIsUnavailableException;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
@@ -17,6 +18,10 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -121,6 +126,33 @@ public class BookingServiceImpl implements BookingService {
         response.setStatus(booking.getStatus());
         response.setBooker(booker);
         response.setItem(item);
+
+        return response;
+    }
+
+    @Override
+    public Collection<BookingCreateResponseDto> findAllBookingsForBooker(Long bookerId, BookingState state) {
+        User booker = userRepository.findById(bookerId)
+                .orElseThrow(() -> generateUserNotFoundException(bookerId));
+
+        List<Booking> bookings = bookingRepository.findAllBookingsForBookerByStatus(bookerId);
+
+        List<BookingCreateResponseDto> response = bookings.stream()
+                .map(booking -> {
+                    BookingCreateResponseDto dto = new BookingCreateResponseDto();
+                    dto.setId(booking.getId());
+                    dto.setStart(booking.getStartDate());
+                    dto.setEnd(booking.getEndDate());
+                    dto.setStatus(booking.getStatus());
+                    dto.setBooker(booker);
+
+                    Long itemId = booking.getItemId();
+                    Item item = itemRepository.findById(itemId)
+                            .orElseThrow(() -> generateItemNotFoundException(itemId));
+                    dto.setItem(item);
+                    return dto;
+                })
+                .collect(Collectors.toList());
 
         return response;
     }
