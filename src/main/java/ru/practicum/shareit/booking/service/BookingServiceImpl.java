@@ -19,8 +19,7 @@ import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -152,6 +151,45 @@ public class BookingServiceImpl implements BookingService {
                     dto.setItem(item);
                     return dto;
                 })
+                .collect(Collectors.toList());
+
+        return response;
+    }
+
+    @Override
+    public Collection<BookingCreateResponseDto> findAllBookingsForItemsOwner(Long ownerId, BookingState state) {
+        User owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> generateUserNotFoundException(ownerId));
+
+//        List<Booking> bookings = bookingRepository.findAllBookingsForItemsOwner(owner.getId());
+        List<Booking> allBookings = bookingRepository.findAll();
+
+        List<Booking> neededBookings = allBookings.stream().filter(b -> {
+            Long itemId = b.getItemId();
+            Item item = itemRepository.findById(itemId)
+                    .orElseThrow(() -> generateItemNotFoundException(itemId));
+            return item.getOwnerId().equals(owner.getId());
+        }).collect(Collectors.toList());
+
+        List<BookingCreateResponseDto> response = neededBookings.stream()
+                .map(booking -> {
+                    BookingCreateResponseDto dto = new BookingCreateResponseDto();
+                    dto.setId(booking.getId());
+                    dto.setStart(booking.getStartDate());
+                    dto.setEnd(booking.getEndDate());
+                    dto.setStatus(booking.getStatus());
+
+                    Long bookerId = booking.getBookerId();
+                    User booker = userRepository.findById(bookerId)
+                            .orElseThrow(() -> generateUserNotFoundException(bookerId));
+                    dto.setBooker(booker);
+
+                    Long itemId = booking.getItemId();
+                    Item item = itemRepository.findById(itemId)
+                            .orElseThrow(() -> generateItemNotFoundException(itemId));
+                    dto.setItem(item);
+                    return dto;
+                }).sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
                 .collect(Collectors.toList());
 
         return response;

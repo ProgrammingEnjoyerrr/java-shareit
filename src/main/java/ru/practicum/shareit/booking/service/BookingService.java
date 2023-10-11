@@ -14,4 +14,6 @@ public interface BookingService {
     BookingCreateResponseDto getBookingData(Long userId, Long bookingId);
 
     Collection<BookingCreateResponseDto> findAllBookingsForBooker(Long bookerId, BookingState state);
+
+    Collection<BookingCreateResponseDto> findAllBookingsForItemsOwner(Long ownerId, BookingState state);
 }

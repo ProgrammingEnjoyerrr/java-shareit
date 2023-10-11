@@ -68,7 +68,24 @@ public class BookingController {
             BookingState state = BookingState.valueOf(stateStr);
             return bookingService.findAllBookingsForBooker(userId, state);
         } catch (IllegalArgumentException e) {
-            String message = "Ошибка конвертации из строки " + stateStr + " в BookingState: " + e;
+            String message = "Unknown state: UNSUPPORTED_STATUS";
+            log.error(message);
+            throw new BookingStateConversionException(message);
+        }
+    }
+
+    @GetMapping(path = "/owner")
+    public Collection<BookingCreateResponseDto> findAllBookingsForItemsOwner(@RequestHeader(value = USER_ID_HEADER) Long ownerId,
+                                                                             @RequestParam(name = "state", defaultValue = "ALL") String stateStr) {
+        log.info("got request GET /bookings/owner?state={state}");
+        log.info("state = {}", stateStr);
+        log.info(USER_ID_HEADER_LOG_PLACEHOLDER, ownerId);
+
+        try {
+            BookingState state = BookingState.valueOf(stateStr);
+            return bookingService.findAllBookingsForItemsOwner(ownerId, state);
+        } catch (IllegalArgumentException e) {
+            String message = "Unknown state: UNSUPPORTED_STATUS";
             log.error(message);
             throw new BookingStateConversionException(message);
         }
