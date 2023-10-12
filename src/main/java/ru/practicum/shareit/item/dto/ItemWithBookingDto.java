@@ -4,6 +4,8 @@ import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Getter
@@ -26,6 +28,8 @@ public class ItemWithBookingDto {
     private BookingMetaData lastBooking;
 
     private BookingMetaData nextBooking;
+
+    private List<CommentCreateResponseDto> comments = new ArrayList<>();
 
     @Getter
     @Setter

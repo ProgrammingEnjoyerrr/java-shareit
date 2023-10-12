@@ -207,7 +207,7 @@ public class ItemServiceImpl implements ItemService {
         response.setId(saved.getId());
         response.setText(saved.getText());
         response.setAuthorName(user.getName());
-        response.setCreated(true);
+        response.setCreated(LocalDateTime.now());
 
         return response;
     }
