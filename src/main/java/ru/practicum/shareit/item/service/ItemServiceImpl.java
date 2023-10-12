@@ -84,7 +84,9 @@ public class ItemServiceImpl implements ItemService {
         log.info("all bookings: {}", allBookings);
 
         LocalDateTime now = LocalDateTime.now();
-        List<Booking> bookings = bookingRepository.findByItemId(itemId, Sort.by(Sort.Direction.DESC, "startDate"));
+        List<Booking> bookings = bookingRepository.findByItemId(itemId, Sort.by(Sort.Direction.DESC, "startDate"))
+                .stream().filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
+                .collect(Collectors.toList());
         log.info("found bookings: {}", bookings);
         List<Item> itemsOfOwner = new ArrayList<>(itemRepository.findAllByOwnerId(userId));
         log.info("found items of owner: {}", itemsOfOwner);
@@ -166,7 +168,9 @@ public class ItemServiceImpl implements ItemService {
             dto.setAvailable(item.getAvailable());
 
             LocalDateTime now = LocalDateTime.now();
-            List<Booking> bookings = bookingRepository.findByItemId(itemId, Sort.by(Sort.Direction.DESC, "startDate"));
+            List<Booking> bookings = bookingRepository.findByItemId(itemId, Sort.by(Sort.Direction.DESC, "startDate"))
+                    .stream().filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
+                    .collect(Collectors.toList());
             log.info("found bookings for item {}: {}", item, bookings);
 
             if (bookings.isEmpty()) {
