@@ -28,7 +28,9 @@ public abstract class BaseErrorHandler {
         PrintWriter pw = new PrintWriter(sw);
         e.printStackTrace(pw);
         String sStackTrace = sw.toString(); // stack trace as a string
-        return new ErrorResponse(String.format("Произошла непредвиденная ошибка: %s.", sStackTrace));
+        String message = String.format("Произошла непредвиденная ошибка: %s.", sStackTrace);
+        log.error(message);
+        return new ErrorResponse(message);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

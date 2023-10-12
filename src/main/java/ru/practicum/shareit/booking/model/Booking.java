@@ -31,5 +31,6 @@ public class Booking {
     Long bookerId;
 
     @Column(name = "booking_status")
+    @Enumerated(EnumType.STRING)
     BookingStatus status;
 }
