@@ -157,6 +157,7 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> generateUserNotFoundException(bookerId));
 
         List<Booking> bookings = bookingRepository.findAllBookingsForBookerByStatus(bookerId);
+        log.info("findAllBookingsForBooker bookings = {}", bookings);
 
         List<BookingCreateResponseDto> response = bookings.stream()
                 .map(booking -> {
@@ -174,6 +175,7 @@ public class BookingServiceImpl implements BookingService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+        log.info("findAllBookingsForBooker response = {}", response);
 
         if (state.equals(BookingState.ALL)) {
             return response;
@@ -197,7 +199,7 @@ public class BookingServiceImpl implements BookingService {
         if (state.equals(BookingState.PAST)) {
             LocalDateTime now = LocalDateTime.now();
             return response.stream()
-                    .filter(b -> b.getStart().isBefore(now))
+                    .filter(b -> b.getEnd().isBefore(now))
                     .collect(Collectors.toList());
         }
 
@@ -273,7 +275,7 @@ public class BookingServiceImpl implements BookingService {
         if (state.equals(BookingState.PAST)) {
             LocalDateTime now = LocalDateTime.now();
             return response.stream()
-                    .filter(b -> b.getStart().isBefore(now))
+                    .filter(b -> b.getEnd().isBefore(now))
                     .collect(Collectors.toList());
         }
 
