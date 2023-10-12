@@ -119,17 +119,26 @@ public class ItemServiceImpl implements ItemService {
         }
 
         if (!bookings.isEmpty()) {
-            Booking lastBooking = bookings.get(bookings.size() - 1);
-            log.info("lastBooking = {}", lastBooking);
-            dto.setLastBooking(new ItemWithBookingDto.BookingMetaData(lastBooking.getId(), lastBooking.getBookerId()));
-            if (bookings.size() == 1) {
-                log.info("only 1 booking");
-                return dto;
+//            Booking lastBooking = bookings.get(bookings.size() - 1);
+            List<Booking> bookingsBeforeNow = bookings.stream()
+                    .filter(b -> b.getStartDate().isBefore(now))
+                    .collect(Collectors.toList());
+            if (bookingsBeforeNow.isEmpty()) {
+                dto.setLastBooking(null);
+            } else {
+                Booking lastBooking = bookingsBeforeNow.get(0);
+                log.info("lastBooking = {}", lastBooking);
+                dto.setLastBooking(new ItemWithBookingDto.BookingMetaData(lastBooking.getId(), lastBooking.getBookerId()));
+                if (bookings.size() == 1) {
+                    log.info("only 1 booking");
+                    return dto;
+                }
             }
 
             List<Booking> afterNow = bookings.stream()
                     .filter(b -> b.getStartDate().isAfter(now))
                     .collect(Collectors.toList());
+            log.info("afterNow = {}", afterNow);
 
             Booking nextBooking = afterNow.get(afterNow.size() - 1);
             log.info("nextBooking = {}", nextBooking);
@@ -177,6 +186,7 @@ public class ItemServiceImpl implements ItemService {
                 List<Booking> afterNow = bookings.stream()
                         .filter(b -> b.getStartDate().isAfter(now))
                         .collect(Collectors.toList());
+                log.info("afterNow = {}", afterNow);
 
                 Booking nextBooking = afterNow.get(afterNow.size() - 1);
                 log.info("nextBooking = {}", nextBooking);

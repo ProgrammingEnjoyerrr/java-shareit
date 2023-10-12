@@ -19,6 +19,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -178,6 +179,14 @@ public class BookingServiceImpl implements BookingService {
             return response;
         }
 
+        if (state.equals(BookingState.CURRENT)) {
+            LocalDateTime now = LocalDateTime.now();
+            return response.stream()
+                    .filter(b -> b.getStart().isBefore(now) && b.getEnd().isAfter(now))
+                    .sorted(Comparator.comparing(BookingCreateResponseDto::getId))
+                    .collect(Collectors.toList());
+        }
+
         if (state.equals(BookingState.FUTURE)) {
             LocalDateTime now = LocalDateTime.now();
             return response.stream()
@@ -212,7 +221,6 @@ public class BookingServiceImpl implements BookingService {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> generateUserNotFoundException(ownerId));
 
-//        List<Booking> bookings = bookingRepository.findAllBookingsForItemsOwner(owner.getId());
         List<Booking> allBookings = bookingRepository.findAll();
 
         List<Booking> neededBookings = allBookings.stream().filter(b -> {
@@ -245,6 +253,14 @@ public class BookingServiceImpl implements BookingService {
 
         if (state.equals(BookingState.ALL)) {
             return response;
+        }
+
+        if (state.equals(BookingState.CURRENT)) {
+            LocalDateTime now = LocalDateTime.now();
+            return response.stream()
+                    .filter(b -> b.getStart().isBefore(now) && b.getEnd().isAfter(now))
+                    .sorted(Comparator.comparing(BookingCreateResponseDto::getId))
+                    .collect(Collectors.toList());
         }
 
         if (state.equals(BookingState.FUTURE)) {
