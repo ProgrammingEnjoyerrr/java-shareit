@@ -9,10 +9,7 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
-import ru.practicum.shareit.item.exception.BookingNotApprovedException;
-import ru.practicum.shareit.item.exception.ItemNotFoundException;
-import ru.practicum.shareit.item.exception.UserIsNotBookerException;
-import ru.practicum.shareit.item.exception.UserIsNotOwnerException;
+import ru.practicum.shareit.item.exception.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
@@ -214,6 +211,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public CommentCreateResponseDto addComment(Long userId, Long itemId, CommentDto commentDto) {
+        // Add comment to item 1 from user5 failed by future booking
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> generateUserNotFoundException(userId));
 
@@ -233,6 +232,14 @@ public class ItemServiceImpl implements ItemService {
             String message = "Бронирование с id {" + booking.getId() + "} не подтверждено. Текущий статус: {" + booking.getStatus() + "}";
             log.error(message);
             throw new BookingNotApprovedException(message);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        if (booking.getStartDate().isAfter(now)) {
+            String message = "Невозможно добавить комментарий к бронированию, которое находится в будущем. " +
+                    "Текущее время {" + now + "}, время начала бронирования {" + booking.getStartDate() + "}";
+            log.error(message);
+            throw new BookingInFutureException(message);
         }
 
         Comment comment = new Comment();
