@@ -94,6 +94,22 @@ public class ItemServiceImpl implements ItemService {
         dto.setName(item.getName());
         dto.setDescription(item.getDescription());
         dto.setAvailable(item.getAvailable());
+
+        List<Comment> comments = commentRepository.findAllByItemId(itemId);
+        List<CommentCreateResponseDto> cmts = new ArrayList<>();
+        for (Comment comment : comments) {
+            CommentCreateResponseDto commentDto = new CommentCreateResponseDto();
+            commentDto.setId(comment.getId());
+            commentDto.setText(comment.getText());
+
+            User author = userRepository.findById(comment.getAuthorId())
+                    .orElseThrow(() -> generateUserNotFoundException(comment.getAuthorId()));
+            commentDto.setAuthorName(author.getName());
+            commentDto.setCreated(comment.getCreated());
+            cmts.add(commentDto);
+        }
+        dto.setComments(cmts);
+
         Optional<Item> foundItem = itemsOfOwner.stream()
                 .filter(i -> i.getId().equals(itemId))
                 .findFirst();
