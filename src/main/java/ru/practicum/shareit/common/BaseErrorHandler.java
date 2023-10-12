@@ -17,18 +17,18 @@ import java.util.stream.Collectors;
 public abstract class BaseErrorHandler {
     protected ErrorResponse commonErrorResponse(final Throwable e, final HttpStatus status) {
         logError(e, status);
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        String sStackTrace = sw.toString(); // stack trace as a string
-        return new ErrorResponse(sStackTrace);
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     private ErrorResponse handleThrowable(final Throwable e) {
         logError(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        return new ErrorResponse(String.format("Произошла непредвиденная ошибка: %s.", e.getMessage()));
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        String sStackTrace = sw.toString(); // stack trace as a string
+        return new ErrorResponse(String.format("Произошла непредвиденная ошибка: %s.", sStackTrace));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
