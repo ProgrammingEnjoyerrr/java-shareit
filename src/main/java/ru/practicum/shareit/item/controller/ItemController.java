@@ -6,6 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemUpdateDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
@@ -45,8 +46,8 @@ public class ItemController {
     }
 
     @GetMapping(value = "/{itemId}")
-    public ItemDto getItemByUserId(@RequestHeader(USER_ID_HEADER) Long userId,
-                            @PathVariable("itemId") Long itemId) {
+    public ItemWithBookingDto getItemByUserId(@RequestHeader(USER_ID_HEADER) Long userId,
+                                              @PathVariable("itemId") Long itemId) {
         log.info("got request GET /items/{itemId}");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         log.info("itemId = {}", itemId);
