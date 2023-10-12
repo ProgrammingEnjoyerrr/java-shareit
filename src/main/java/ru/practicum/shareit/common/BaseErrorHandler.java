@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.ConstraintViolationException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,7 +17,11 @@ import java.util.stream.Collectors;
 public abstract class BaseErrorHandler {
     protected ErrorResponse commonErrorResponse(final Throwable e, final HttpStatus status) {
         logError(e, status);
-        return new ErrorResponse(e.getMessage());
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        String sStackTrace = sw.toString(); // stack trace as a string
+        return new ErrorResponse(sStackTrace);
     }
 
     @ExceptionHandler
@@ -56,5 +63,6 @@ public abstract class BaseErrorHandler {
     private void logError(final Throwable e, final HttpStatus status) {
         log.error("{} {}", status.value(), status.getReasonPhrase());
         log.error("thrown {} : {}", e.getClass().getCanonicalName(), e.getMessage());
+        log.error("stacktrace: {}", Arrays.asList(e.getStackTrace()));
     }
 }
