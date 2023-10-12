@@ -18,8 +18,10 @@ import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,12 +82,25 @@ public class ItemServiceImpl implements ItemService {
         //List<Booking> bookings = bookingRepository.findByBookerId(userId, Sort.by(Sort.Direction.DESC, "startDate"));
         List<Booking> bookings = bookingRepository.findByItemId(itemId, Sort.by(Sort.Direction.DESC, "startDate"));
         log.info("found bookings: {}", bookings);
+        List<Item> itemsOfOwner = new ArrayList<>(itemRepository.findAllByOwnerId(userId));
+        log.info("found items of owner: {}", itemsOfOwner);
+//        bookings = bookings.stream()
+//                .filter(b -> itemsOfOwner.stream().anyMatch(i -> i.getId().equals(b.getItemId())))
+//                .collect(Collectors.toList());
 
         ItemWithBookingDto dto = new ItemWithBookingDto();
         dto.setId(item.getId());
         dto.setName(item.getName());
         dto.setDescription(item.getDescription());
         dto.setAvailable(item.getAvailable());
+        Optional<Item> foundItem = itemsOfOwner.stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst();
+        if (foundItem.isEmpty()) {
+            // {userId} not owner of item {itemId}
+            log.info("user {} is not owner of item {}", userId, itemId);
+            return dto;
+        }
 
         if (!bookings.isEmpty()) {
             Booking lastBooking = bookings.get(0);
