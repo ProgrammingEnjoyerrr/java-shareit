@@ -118,13 +118,52 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Collection<ItemDto> getAllUserItems(Long userId) {
+    public Collection<ItemWithBookingDto> getAllUserItems(Long userId) {
         ensureUserExists(userId);
 
-        log.info("найдены все предметы пользователя {}", userId);
-        return itemRepository.findAllByOwnerId(userId).stream()
-                .map(ItemMapper::toItemDto)
-                .collect(Collectors.toList());
+        List<Item> itemsOfOwner = new ArrayList<>(itemRepository.findAllByOwnerId(userId));
+        log.info("found items of owner: {}", itemsOfOwner);
+
+        List<ItemWithBookingDto> dtos = new ArrayList<>();
+
+        for (Item item : itemsOfOwner) {
+            ItemWithBookingDto dto = new ItemWithBookingDto();
+            Long itemId = item.getId();
+            dto.setId(item.getId());
+            dto.setName(item.getName());
+            dto.setDescription(item.getDescription());
+            dto.setAvailable(item.getAvailable());
+
+            LocalDateTime now = LocalDateTime.now();
+            List<Booking> bookings = bookingRepository.findByItemId(itemId, Sort.by(Sort.Direction.DESC, "startDate"));
+            log.info("found bookings for item {}: {}", item, bookings);
+
+            if (bookings.isEmpty()) {
+                dtos.add(dto);
+            }
+
+            if (!bookings.isEmpty()) {
+                Booking lastBooking = bookings.get(bookings.size() - 1);
+                log.info("lastBooking = {}", lastBooking);
+                dto.setLastBooking(new ItemWithBookingDto.BookingMetaData(lastBooking.getId(), lastBooking.getBookerId()));
+                if (bookings.size() == 1) {
+                    log.info("only 1 booking");
+                    dtos.add(dto);
+                    continue;
+                }
+
+                List<Booking> afterNow = bookings.stream()
+                        .filter(b -> b.getStartDate().isAfter(now))
+                        .collect(Collectors.toList());
+
+                Booking nextBooking = afterNow.get(afterNow.size() - 1);
+                log.info("nextBooking = {}", nextBooking);
+                dto.setNextBooking(new ItemWithBookingDto.BookingMetaData(nextBooking.getId(), nextBooking.getBookerId()));
+                dtos.add(dto);
+            }
+        }
+
+        return dtos;
     }
 
     @Override

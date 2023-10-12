@@ -55,7 +55,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemDto> getAllUserItems(@RequestHeader(USER_ID_HEADER) Long userId) {
+    public Collection<ItemWithBookingDto> getAllUserItems(@RequestHeader(USER_ID_HEADER) Long userId) {
         log.info("got request GET /items");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         return itemService.getAllUserItems(userId);

@@ -13,7 +13,7 @@ public interface ItemService {
 
     ItemWithBookingDto getItemById(Long userId, Long itemId);
 
-    Collection<ItemDto> getAllUserItems(Long userId);
+    Collection<ItemWithBookingDto> getAllUserItems(Long userId);
 
     Collection<ItemDto> getAvailableItemsByKeyWord(Long userId, String keyWord);
 }
