@@ -78,15 +78,10 @@ public class ItemServiceImpl implements ItemService {
         log.info("all bookings: {}", allBookings);
 
         LocalDateTime now = LocalDateTime.now();
-        //List<Booking> bookings = bookingRepository.findByBookerIdAndEndDateIsBefore(userId, now, Sort.by(Sort.Direction.DESC, "startDate"));
-        //List<Booking> bookings = bookingRepository.findByBookerId(userId, Sort.by(Sort.Direction.DESC, "startDate"));
         List<Booking> bookings = bookingRepository.findByItemId(itemId, Sort.by(Sort.Direction.DESC, "startDate"));
         log.info("found bookings: {}", bookings);
         List<Item> itemsOfOwner = new ArrayList<>(itemRepository.findAllByOwnerId(userId));
         log.info("found items of owner: {}", itemsOfOwner);
-//        bookings = bookings.stream()
-//                .filter(b -> itemsOfOwner.stream().anyMatch(i -> i.getId().equals(b.getItemId())))
-//                .collect(Collectors.toList());
 
         ItemWithBookingDto dto = new ItemWithBookingDto();
         dto.setId(item.getId());
@@ -97,7 +92,6 @@ public class ItemServiceImpl implements ItemService {
                 .filter(i -> i.getId().equals(itemId))
                 .findFirst();
         if (foundItem.isEmpty()) {
-            // {userId} not owner of item {itemId}
             log.info("user {} is not owner of item {}", userId, itemId);
             return dto;
         }
