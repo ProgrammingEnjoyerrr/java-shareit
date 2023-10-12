@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemUpdateDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingDto;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
@@ -27,7 +25,7 @@ public class ItemController {
 
     @PostMapping
     public ItemDto createItem(@RequestHeader(value = USER_ID_HEADER) Long userId,
-                       @RequestBody @Valid ItemDto itemDto) {
+                              @RequestBody @Valid ItemDto itemDto) {
         log.info("got request POST /items");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         log.info("request body: {}", itemDto);
@@ -36,8 +34,8 @@ public class ItemController {
 
     @PatchMapping(value = "/{itemId}")
     public ItemUpdateDto updateItem(@RequestHeader(USER_ID_HEADER) Long userId,
-                             @PathVariable("itemId") Long itemId,
-                             @RequestBody ItemUpdateDto itemUpdateDto) {
+                                    @PathVariable("itemId") Long itemId,
+                                    @RequestBody ItemUpdateDto itemUpdateDto) {
         log.info("got request PATCH /items/{itemId}");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         log.info("itemId = {}", itemId);
@@ -63,7 +61,7 @@ public class ItemController {
 
     @GetMapping(value = "/search")
     public Collection<ItemDto> getAvailableItemsByKeyWord(@RequestHeader(USER_ID_HEADER) Long userId,
-                                                   @RequestParam(name = "text") String keyWord) {
+                                                          @RequestParam(name = "text") String keyWord) {
         log.info("got request GET /items/search");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         log.info("text = {}", keyWord);
@@ -72,5 +70,17 @@ public class ItemController {
         }
 
         return itemService.getAvailableItemsByKeyWord(userId, keyWord);
+    }
+
+    @PostMapping(value = "/{itemId}/comment")
+    public CommentCreateResponseDto addComment(@RequestHeader(USER_ID_HEADER) Long userId,
+                                               @PathVariable("itemId") Long itemId,
+                                               @RequestBody final CommentDto commentDto) {
+        log.info("got request POST /items/{itemId}/comment");
+        log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
+        log.info("itemId = {}", itemId);
+        log.info("request body = {}", commentDto);
+
+        return itemService.addComment(userId, itemId, commentDto);
     }
 }

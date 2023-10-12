@@ -6,15 +6,17 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemUpdateDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingDto;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
+import ru.practicum.shareit.item.exception.UserIsNotBookerException;
 import ru.practicum.shareit.item.exception.UserIsNotOwnerException;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
@@ -34,6 +36,8 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
 
     private final BookingRepository bookingRepository;
+
+    private final CommentRepository commentRepository;
 
     @Override
     public ItemDto createItem(Long userId, ItemDto itemDto) {
@@ -176,6 +180,38 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public CommentCreateResponseDto addComment(Long userId, Long itemId, CommentDto commentDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> generateUserNotFoundException(userId));
+
+        // check that user booked item
+        List<Booking> userBookings = bookingRepository.findByBookerId(userId);
+        Optional<Booking> bookingOpt = userBookings.stream()
+                .filter(b -> b.getItemId().equals(itemId))
+                .findFirst();
+        if (bookingOpt.isEmpty()) {
+            String message = "Пользователь с id {" + userId + "} не является владельцем предмета с id {" + itemId + "}";
+            log.error(message);
+            throw new UserIsNotBookerException(message);
+        }
+
+        Comment comment = new Comment();
+        comment.setText(comment.getText());
+        comment.setItemId(itemId);
+        comment.setAuthorId(userId);
+
+        Comment saved = commentRepository.save(comment);
+
+        CommentCreateResponseDto response = new CommentCreateResponseDto();
+        response.setId(saved.getId());
+        response.setText(saved.getText());
+        response.setAuthorName(user.getName());
+        response.setCreated(true);
+
+        return response;
+    }
+
     private void ensureUserExists(Long userId) {
         if (!userRepository.existsById(userId)) {
             String message = "пользователь с id " + userId + " не существует";
@@ -223,5 +259,11 @@ public class ItemServiceImpl implements ItemService {
         String message = "предмет с id " + itemId + " не существует";
         log.error(message);
         return new ItemNotFoundException(message);
+    }
+
+    private UserNotFoundException generateUserNotFoundException(long userId) {
+        String message = "пользователь с id " + userId + " не существует";
+        log.error(message);
+        return new UserNotFoundException(message);
     }
 }

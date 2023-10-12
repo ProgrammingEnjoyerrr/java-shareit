@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.common.BaseErrorHandler;
 import ru.practicum.shareit.common.ErrorResponse;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
+import ru.practicum.shareit.item.exception.UserIsNotBookerException;
 import ru.practicum.shareit.item.exception.UserIsNotOwnerException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 
@@ -35,6 +36,12 @@ public class ItemErrorHandler extends BaseErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMissingRequestHeaderException(final MissingRequestHeaderException e) {
+        return commonErrorResponse(e, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleUserIsNotBookerException(final UserIsNotBookerException e) {
         return commonErrorResponse(e, HttpStatus.BAD_REQUEST);
     }
 }
