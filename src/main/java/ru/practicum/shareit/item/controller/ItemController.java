@@ -75,7 +75,7 @@ public class ItemController {
     @PostMapping(value = "/{itemId}/comment")
     public CommentCreateResponseDto addComment(@RequestHeader(USER_ID_HEADER) Long userId,
                                                @PathVariable("itemId") Long itemId,
-                                               @RequestBody final CommentDto commentDto) {
+                                               @RequestBody @Valid final CommentDto commentDto) {
         log.info("got request POST /items/{itemId}/comment");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         log.info("itemId = {}", itemId);

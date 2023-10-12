@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
+import ru.practicum.shareit.item.exception.BookingNotApprovedException;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.exception.UserIsNotBookerException;
 import ru.practicum.shareit.item.exception.UserIsNotOwnerException;
@@ -196,8 +198,15 @@ public class ItemServiceImpl implements ItemService {
             throw new UserIsNotBookerException(message);
         }
 
+        Booking booking = bookingOpt.get();
+        if (!booking.getStatus().equals(BookingStatus.APPROVED)) {
+            String message = "Бронирование с id {" + booking.getId() + "} не подтверждено. Текущий статус: {" + booking.getStatus() + "}";
+            log.error(message);
+            throw new BookingNotApprovedException(message);
+        }
+
         Comment comment = new Comment();
-        comment.setText(comment.getText());
+        comment.setText(commentDto.getText());
         comment.setItemId(itemId);
         comment.setAuthorId(userId);
 

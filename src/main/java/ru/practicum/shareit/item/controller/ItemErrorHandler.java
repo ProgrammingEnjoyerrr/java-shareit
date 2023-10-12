@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.common.BaseErrorHandler;
 import ru.practicum.shareit.common.ErrorResponse;
+import ru.practicum.shareit.item.exception.BookingNotApprovedException;
 import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.exception.UserIsNotBookerException;
 import ru.practicum.shareit.item.exception.UserIsNotOwnerException;
@@ -42,6 +43,12 @@ public class ItemErrorHandler extends BaseErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleUserIsNotBookerException(final UserIsNotBookerException e) {
+        return commonErrorResponse(e, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBookingNotApprovedException(final BookingNotApprovedException e) {
         return commonErrorResponse(e, HttpStatus.BAD_REQUEST);
     }
 }
