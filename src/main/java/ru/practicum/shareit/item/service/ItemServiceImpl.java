@@ -103,7 +103,7 @@ public class ItemServiceImpl implements ItemService {
         }
 
         if (!bookings.isEmpty()) {
-            Booking lastBooking = bookings.get(0);
+            Booking lastBooking = bookings.get(bookings.size() - 1);
             log.info("lastBooking = {}", lastBooking);
             dto.setLastBooking(new ItemWithBookingDto.BookingMetaData(lastBooking.getId(), lastBooking.getBookerId()));
             if (bookings.size() == 1) {
