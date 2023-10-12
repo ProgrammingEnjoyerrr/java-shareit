@@ -17,6 +17,7 @@ import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -173,7 +174,37 @@ public class BookingServiceImpl implements BookingService {
                 })
                 .collect(Collectors.toList());
 
-        return response;
+        if (state.equals(BookingState.ALL)) {
+            return response;
+        }
+
+        if (state.equals(BookingState.FUTURE)) {
+            LocalDateTime now = LocalDateTime.now();
+            return response.stream()
+                    .filter(b -> b.getStart().isAfter(now))
+                    .collect(Collectors.toList());
+        }
+
+        if (state.equals(BookingState.PAST)) {
+            LocalDateTime now = LocalDateTime.now();
+            return response.stream()
+                    .filter(b -> b.getStart().isBefore(now))
+                    .collect(Collectors.toList());
+        }
+
+        if (state.equals(BookingState.WAITING)) {
+            return response.stream()
+                    .filter(b -> b.getStatus().equals(BookingStatus.WAITING))
+                    .collect(Collectors.toList());
+        }
+
+        if (state.equals(BookingState.REJECTED)) {
+            return response.stream()
+                    .filter(b -> b.getStatus().equals(BookingStatus.REJECTED))
+                    .collect(Collectors.toList());
+        }
+
+        throw new RuntimeException("unexpected status CURRENT");
     }
 
     @Override
@@ -212,7 +243,37 @@ public class BookingServiceImpl implements BookingService {
                 }).sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
                 .collect(Collectors.toList());
 
-        return response;
+        if (state.equals(BookingState.ALL)) {
+            return response;
+        }
+
+        if (state.equals(BookingState.FUTURE)) {
+            LocalDateTime now = LocalDateTime.now();
+            return response.stream()
+                    .filter(b -> b.getStart().isAfter(now))
+                    .collect(Collectors.toList());
+        }
+
+        if (state.equals(BookingState.PAST)) {
+            LocalDateTime now = LocalDateTime.now();
+            return response.stream()
+                    .filter(b -> b.getStart().isBefore(now))
+                    .collect(Collectors.toList());
+        }
+
+        if (state.equals(BookingState.WAITING)) {
+            return response.stream()
+                    .filter(b -> b.getStatus().equals(BookingStatus.WAITING))
+                    .collect(Collectors.toList());
+        }
+
+        if (state.equals(BookingState.REJECTED)) {
+            return response.stream()
+                    .filter(b -> b.getStatus().equals(BookingStatus.REJECTED))
+                    .collect(Collectors.toList());
+        }
+
+        throw new RuntimeException("unexpected status CURRENT");
     }
 
     private UserNotFoundException generateUserNotFoundException(long userId) {
