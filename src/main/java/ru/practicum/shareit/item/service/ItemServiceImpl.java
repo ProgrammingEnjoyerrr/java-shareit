@@ -209,6 +209,7 @@ public class ItemServiceImpl implements ItemService {
         comment.setText(commentDto.getText());
         comment.setItemId(itemId);
         comment.setAuthorId(userId);
+        comment.setCreated(LocalDateTime.now());
 
         Comment saved = commentRepository.save(comment);
 
@@ -216,7 +217,7 @@ public class ItemServiceImpl implements ItemService {
         response.setId(saved.getId());
         response.setText(saved.getText());
         response.setAuthorName(user.getName());
-        response.setCreated(LocalDateTime.now());
+        response.setCreated(saved.getCreated());
 
         return response;
     }

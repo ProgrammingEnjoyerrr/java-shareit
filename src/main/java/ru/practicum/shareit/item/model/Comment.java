@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Builder
 @NoArgsConstructor
@@ -25,5 +26,8 @@ public class Comment {
 
     @Column(name = "author_id", nullable = false)
     private Long authorId;
+
+    @Column(nullable = false)
+    private LocalDateTime created;
 }
 
