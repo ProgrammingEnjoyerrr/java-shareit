@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -39,6 +40,7 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
 
     @Override
+    @Transactional
     public ItemDto createItem(Long userId, ItemDto itemDto) {
         ensureUserExists(userId);
 
@@ -51,6 +53,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public ItemUpdateDto updateItem(Long userId, Long itemId, ItemUpdateDto itemUpdateDto) {
         Item oldItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
@@ -70,6 +73,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ItemWithBookingDto getItemById(Long userId, Long itemId) {
         ensureUserExists(userId);
 
@@ -148,6 +152,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Collection<ItemWithBookingDto> getAllUserItems(Long userId) {
         ensureUserExists(userId);
 
@@ -200,6 +205,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Collection<ItemDto> getAvailableItemsByKeyWord(Long userId, String keyWord) {
         ensureUserExists(userId);
 
@@ -210,6 +216,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public CommentCreateResponseDto addComment(Long userId, Long itemId, CommentDto commentDto) {
         // Add comment to item 1 from user5 failed by future booking
 
