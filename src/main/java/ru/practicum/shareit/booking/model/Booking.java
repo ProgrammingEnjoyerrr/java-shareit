@@ -19,18 +19,18 @@ public class Booking {
     private Long id;
 
     @Column(name = "start_date")
-    LocalDateTime startDate;
+    private LocalDateTime startDate;
 
     @Column(name = "end_date")
-    LocalDateTime endDate;
+    private LocalDateTime endDate;
 
     @Column(name = "item_id")
-    Long itemId;
+    private Long itemId;
 
     @Column(name = "booker_id")
-    Long bookerId;
+    private Long bookerId;
 
     @Column(name = "booking_status")
     @Enumerated(EnumType.STRING)
-    BookingStatus status;
+    private BookingStatus status;
 }
