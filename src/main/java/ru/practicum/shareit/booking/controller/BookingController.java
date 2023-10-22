@@ -6,8 +6,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingCreateRequestDto;
 import ru.practicum.shareit.booking.dto.BookingCreateResponseDto;
-import ru.practicum.shareit.booking.exception.BookingStateConversionException;
-import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
@@ -64,14 +62,7 @@ public class BookingController {
         log.info("state = {}", stateStr);
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, userId);
 
-        try {
-            BookingState state = BookingState.valueOf(stateStr);
-            return bookingService.findAllBookingsForBooker(userId, state);
-        } catch (IllegalArgumentException e) {
-            String message = "Unknown state: UNSUPPORTED_STATUS";
-            log.error(message);
-            throw new BookingStateConversionException(message);
-        }
+        return bookingService.findAllBookingsForBooker(userId, stateStr);
     }
 
     @GetMapping(path = "/owner")
@@ -81,13 +72,6 @@ public class BookingController {
         log.info("state = {}", stateStr);
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, ownerId);
 
-        try {
-            BookingState state = BookingState.valueOf(stateStr);
-            return bookingService.findAllBookingsForItemsOwner(ownerId, state);
-        } catch (IllegalArgumentException e) {
-            String message = "Unknown state: UNSUPPORTED_STATUS";
-            log.error(message);
-            throw new BookingStateConversionException(message);
-        }
+        return bookingService.findAllBookingsForItemsOwner(ownerId, stateStr);
     }
 }

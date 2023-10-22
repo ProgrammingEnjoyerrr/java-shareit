@@ -7,9 +7,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.ConstraintViolationException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,12 +20,8 @@ public abstract class BaseErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     private ErrorResponse handleThrowable(final Throwable e) {
+        String message = String.format("Произошла непредвиденная ошибка: %s.", e);
         logError(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        String sStackTrace = sw.toString(); // stack trace as a string
-        String message = String.format("Произошла непредвиденная ошибка: %s.", sStackTrace);
         log.error(message);
         return new ErrorResponse(message);
     }
@@ -65,6 +58,5 @@ public abstract class BaseErrorHandler {
     private void logError(final Throwable e, final HttpStatus status) {
         log.error("{} {}", status.value(), status.getReasonPhrase());
         log.error("thrown {} : {}", e.getClass().getCanonicalName(), e.getMessage());
-        log.error("stacktrace: {}", Arrays.asList(e.getStackTrace()));
     }
 }

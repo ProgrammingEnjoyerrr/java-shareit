@@ -152,7 +152,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<BookingCreateResponseDto> findAllBookingsForBooker(Long bookerId, BookingState state) {
+    public Collection<BookingCreateResponseDto> findAllBookingsForBooker(Long bookerId, String stateStr) {
+        BookingState state = fromString(stateStr);
+
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> generateUserNotFoundException(bookerId));
 
@@ -219,7 +221,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<BookingCreateResponseDto> findAllBookingsForItemsOwner(Long ownerId, BookingState state) {
+    public Collection<BookingCreateResponseDto> findAllBookingsForItemsOwner(Long ownerId, String stateStr) {
+        BookingState state = fromString(stateStr);
+
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> generateUserNotFoundException(ownerId));
 
@@ -310,5 +314,15 @@ public class BookingServiceImpl implements BookingService {
         String message = "бронирование с id " + bookingId + " не существует";
         log.error(message);
         return new BookingNotFoundException(message);
+    }
+
+    private BookingState fromString(final String bookingStateStr) {
+        try {
+            return BookingState.valueOf(bookingStateStr);
+        } catch (IllegalArgumentException e) {
+            String message = "Unknown state: UNSUPPORTED_STATUS";
+            log.error(message);
+            throw new BookingStateConversionException(message);
+        }
     }
 }
