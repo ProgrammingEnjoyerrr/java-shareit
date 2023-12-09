@@ -47,8 +47,12 @@ public class ItemServiceImpl implements ItemService {
         Item item = ItemMapper.toItem(itemDto, userId);
 
         Item created = itemRepository.save(item);
-
         log.info("предмет создан; id: {}", created.getId());
+
+        if (itemDto.getRequestId() != null) {
+            // TODO
+        }
+
         return ItemMapper.toItemDto(created);
     }
 
