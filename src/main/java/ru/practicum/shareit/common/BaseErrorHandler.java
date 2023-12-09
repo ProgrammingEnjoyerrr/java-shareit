@@ -20,8 +20,10 @@ public abstract class BaseErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     private ErrorResponse handleThrowable(final Throwable e) {
+        String message = String.format("Произошла непредвиденная ошибка: %s.", e);
         logError(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        return new ErrorResponse(String.format("Произошла непредвиденная ошибка: %s.", e.getMessage()));
+        log.error(message);
+        return new ErrorResponse(message);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

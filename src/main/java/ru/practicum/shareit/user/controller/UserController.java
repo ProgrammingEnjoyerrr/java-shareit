@@ -51,11 +51,11 @@ public class UserController {
     }
 
     @DeleteMapping(value = "/{userId}")
-    public UserDto deleteUserById(@PathVariable("userId") Long userId) {
+    public void deleteUserById(@PathVariable("userId") Long userId) {
         log.info("got request DELETE /users/{userId}");
         log.info(USER_ID_LOG_PLACEHOLDER, userId);
 
-        return userService.deleteUserById(userId);
+        userService.deleteUserById(userId);
     }
 
     @GetMapping

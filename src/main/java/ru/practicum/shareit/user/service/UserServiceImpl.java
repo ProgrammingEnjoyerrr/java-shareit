@@ -3,10 +3,10 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
 import ru.practicum.shareit.user.dto.mapper.UserMapper;
-import ru.practicum.shareit.user.exception.NonUniqueEmailException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -22,72 +22,69 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional
     public UserDto createUser(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
 
-        ensureEmailUnique(user.getEmail(), userDto.getId());
-
-        User created = userRepository.createUser(user);
+        User created = userRepository.save(user);
 
         log.info("пользователь создан; id: {}", created.getId());
         return UserMapper.toUserDto(created);
     }
 
     @Override
+    @Transactional
     public UserUpdateDto updateUser(UserUpdateDto userUpdateDto) {
+        long userId = userUpdateDto.getId();
+        User oldUser = userRepository.findById(userId)
+                .orElseThrow(() -> generateUserNotFoundException(userId));
+
         User userToUpdate = UserMapper.toUser(userUpdateDto);
 
-        ensureUserExists(userToUpdate.getId());
-        ensureEmailUnique(userUpdateDto.getEmail(), userUpdateDto.getId());
+        userToUpdate = mapUserWithNullFields(oldUser, userToUpdate);
 
-        User updated = userRepository.updateUser(userToUpdate);
+        User updated = userRepository.save(userToUpdate);
 
         log.info("пользователь с id {} обновлен", updated.getId());
         return UserMapper.toUserUpdateDto(updated);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDto getUserById(Long userId) {
-        ensureUserExists(userId);
-
-        User user = userRepository.getUserById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> generateUserNotFoundException(userId));
 
         log.info("найден пользователь с id {}", user.getId());
         return UserMapper.toUserDto(user);
     }
 
     @Override
-    public UserDto deleteUserById(Long userId) {
-        ensureUserExists(userId);
-
-        User deleted = userRepository.deleteUserById(userId);
-
-        log.info("пользователь с id {} удалён", deleted.getId());
-        return UserMapper.toUserDto(deleted);
+    @Transactional
+    public void deleteUserById(Long userId) {
+        userRepository.deleteById(userId);
+        log.info("пользователь с id {} удалён", userId);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Collection<UserDto> getAllUsers() {
-        return userRepository.getAllUsers().stream()
+        return userRepository.findAll().stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
-    private void ensureUserExists(Long userId) {
-        if (!userRepository.isUserExists(userId)) {
-            String message = "пользователь с id " + userId + " не существует";
-            log.error(message);
-            throw new UserNotFoundException(message);
-        }
-
-        log.info("пользователь с id {} найден", userId);
+    private User mapUserWithNullFields(final User oldUser, final User userToUpdate) {
+        return User.builder()
+                .id(oldUser.getId())
+                .name(userToUpdate.getName() != null ? userToUpdate.getName() : oldUser.getName())
+                .email(userToUpdate.getEmail() != null ? userToUpdate.getEmail() : oldUser.getEmail())
+                .build();
     }
 
-    private void ensureEmailUnique(String email, Long userId) {
-        if (!userRepository.isEmailUnique(email, userId)) {
-            String message = "Email " + email + " уже занят";
-            log.error(message);
-            throw new NonUniqueEmailException(message);
-        }
+    private UserNotFoundException generateUserNotFoundException(long userId) {
+        String message = "пользователь с id " + userId + " не существует";
+        log.error(message);
+        return new UserNotFoundException(message);
     }
 }
