@@ -2,6 +2,10 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingCreateRequestDto;
@@ -157,13 +161,15 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public Collection<BookingCreateResponseDto> findAllBookingsForBooker(Long bookerId, String stateStr) {
+    public Collection<BookingCreateResponseDto> findAllBookingsForBooker(Long bookerId, String stateStr,
+                                                                         Integer from, Integer size) {
+        Pageable pageable = PageRequest.of(from / size, size);
         BookingState state = fromString(stateStr);
 
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> generateUserNotFoundException(bookerId));
 
-        List<Booking> bookings = bookingRepository.findAllBookingsForBookerByStatus(bookerId);
+        List<Booking> bookings = bookingRepository.findAllBookingsForBookerByStatus(bookerId, pageable);
         log.info("findAllBookingsForBooker bookings = {}", bookings);
 
         List<BookingCreateResponseDto> response = bookings.stream()
@@ -222,18 +228,28 @@ public class BookingServiceImpl implements BookingService {
                     .collect(Collectors.toList());
         }
 
-        throw new RuntimeException("unexpected status CURRENT");
+        throw new RuntimeException("unexpected booking state " + state);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Collection<BookingCreateResponseDto> findAllBookingsForItemsOwner(Long ownerId, String stateStr) {
+    public Collection<BookingCreateResponseDto> findAllBookingsForItemsOwner(Long ownerId, String stateStr,
+                                                                             Integer from, Integer size) {
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("id").descending());
         BookingState state = fromString(stateStr);
 
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> generateUserNotFoundException(ownerId));
 
-        List<Booking> allBookings = bookingRepository.findAll();
+        Collection<Item> neededItems = itemRepository.findAllByOwnerId(ownerId);
+        log.info("found {} needed items: {}", neededItems.size(), neededItems);
+
+        List<Booking> allBookings = bookingRepository.findByItemIdIn(
+                neededItems.stream()
+                        .map(Item::getId)
+                        .collect(Collectors.toList()),
+                pageable);
+        log.info("found {} bookings: {}", allBookings.size(), allBookings);
 
         List<Booking> neededBookings = allBookings.stream().filter(b -> {
             Long itemId = b.getItemId();
@@ -301,7 +317,7 @@ public class BookingServiceImpl implements BookingService {
                     .collect(Collectors.toList());
         }
 
-        throw new RuntimeException("unexpected status CURRENT");
+        throw new RuntimeException("unexpected booking state " + state);
     }
 
     private UserNotFoundException generateUserNotFoundException(long userId) {
@@ -326,7 +342,7 @@ public class BookingServiceImpl implements BookingService {
         try {
             return BookingState.valueOf(bookingStateStr);
         } catch (IllegalArgumentException e) {
-            String message = "Unknown state: UNSUPPORTED_STATUS";
+            String message = "Unknown state: " + bookingStateStr;
             log.error(message);
             throw new BookingStateConversionException(message);
         }
