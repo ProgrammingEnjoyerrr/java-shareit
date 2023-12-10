@@ -2,21 +2,23 @@ package ru.practicum.shareit.request.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.request.dto.GetItemRequestResponseDto;
-import ru.practicum.shareit.request.dto.ItemRequestRequestDto;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.request.dto.ItemRequestMapper;
+import ru.practicum.shareit.request.dto.ItemRequestRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestResponseDto;
+import ru.practicum.shareit.request.exception.ItemRequestNotFoundException;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,43 +35,72 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> generateUserNotFoundException(userId));
 
-        ItemRequest itemRequest = new ItemRequest();
-        itemRequest.setUserId(userId);
-        itemRequest.setDescription(itemRequestRequestDto.getDescription());
-        itemRequest.setCreated(LocalDateTime.now());
+        ItemRequest itemRequest = ItemRequestMapper.toItemRequest(itemRequestRequestDto, user);
 
         ItemRequest created = itemRequestRepository.save(itemRequest);
 
-        return ItemRequestMapper.toItemResponseDto(created);
+        return ItemRequestMapper.toItemRequestResponseDto(created);
     }
 
     @Override
-    public Collection<GetItemRequestResponseDto> getUserItemRequests(Long userId) {
+    @Transactional(readOnly = true)
+    public Collection<ItemRequestResponseDto> getUserItemRequests(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> generateUserNotFoundException(userId));
 
         Collection<ItemRequest> itemRequests = itemRequestRepository
-                .findAllByUserIdOrderByCreatedDesc(userId);
+                .findAllByRequesterId(userId);
 
-
-
-        return null;
+        return itemRequests.stream()
+                .map(ItemRequestMapper::toItemRequestResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public ItemRequestResponseDto getItemRequestFromOtherUsers(Long userId, Optional<Long> fromOpt, Optional<Long> sizeOpt) {
+    @Transactional(readOnly = true)
+    public List<ItemRequestResponseDto> getItemRequestFromOtherUsers(Long userId, Optional<Integer> fromOpt,
+                                                                     Optional<Integer> sizeOpt) {
+        int from = 0;
+        if (fromOpt.isPresent()) {
+            from = fromOpt.get();
+            if (from < 0) {
+                throw new RuntimeException("fromOpt is negative");
+            }
+        }
+
+        int size = 10;
+        if (sizeOpt.isPresent()) {
+            size = sizeOpt.get();
+            if (size < 0) {
+                throw new RuntimeException("sizeOpt is negative");
+            }
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> generateUserNotFoundException(userId));
 
-        return null;
+        List<ItemRequest> itemRequests = itemRequestRepository
+                .findAllByRequester_IdNotOrderByCreatedDesc(userId, PageRequest.of(from / size, size));
+
+        return itemRequests.stream()
+                .map(ItemRequestMapper::toItemRequestResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ItemRequestResponseDto getItemRequestById(Long userId, Long requestId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> generateUserNotFoundException(userId));
 
-        return null;
+        Optional<ItemRequest> itemRequest = itemRequestRepository.findById(requestId);
+        if (itemRequest.isEmpty()) {
+            final String message = String.format("Запрос вещи с id = %d не был найден.", requestId);
+            log.error(message);
+            throw new ItemRequestNotFoundException(message);
+        }
+
+        return ItemRequestMapper.toItemRequestResponseDto(itemRequest.get());
     }
 
     private UserNotFoundException generateUserNotFoundException(long userId) {

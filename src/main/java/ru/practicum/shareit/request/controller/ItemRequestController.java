@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.request.dto.GetItemRequestResponseDto;
 import ru.practicum.shareit.request.dto.ItemRequestRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestResponseDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
@@ -36,15 +35,16 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    Collection<GetItemRequestResponseDto> getUserItemRequests(@RequestHeader(value = USER_ID_HEADER) Long userId) {
+    Collection<ItemRequestResponseDto> getUserItemRequests(@RequestHeader(value = USER_ID_HEADER) Long userId) {
         log.info("got request GET /requests");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, userId);
         return itemRequestService.getUserItemRequests(userId);
     }
 
     @GetMapping(value = "/all")
-    ItemRequestResponseDto getItemRequestFromOtherUsers(@RequestHeader(value = USER_ID_HEADER) Long userId,
-                                                        @RequestParam Optional<Long> fromOpt, @RequestParam Optional<Long> sizeOpt) {
+    Collection<ItemRequestResponseDto> getItemRequestFromOtherUsers(@RequestHeader(value = USER_ID_HEADER) Long userId,
+                                                                    @RequestParam Optional<Integer> fromOpt,
+                                                                    @RequestParam Optional<Integer> sizeOpt) {
         log.info("got request GET /requests/all");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, userId);
         fromOpt.ifPresent(from -> log.info("from = {}", from));
@@ -52,9 +52,9 @@ public class ItemRequestController {
         return itemRequestService.getItemRequestFromOtherUsers(userId, fromOpt, sizeOpt);
     }
 
-    @GetMapping
+    @GetMapping("/{requestId}")
     ItemRequestResponseDto getItemRequestById(@RequestHeader(value = USER_ID_HEADER) Long userId,
-                                              @PathVariable("requestId") Long requestId) {
+                                              @PathVariable Long requestId) {
         log.info("got request GET /requests/{requestId = {}}", requestId);
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, userId);
         return itemRequestService.getItemRequestById(userId, requestId);
