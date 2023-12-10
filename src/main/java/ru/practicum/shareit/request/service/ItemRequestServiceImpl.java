@@ -38,6 +38,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         ItemRequest itemRequest = ItemRequestMapper.toItemRequest(itemRequestRequestDto, user);
 
         ItemRequest created = itemRequestRepository.save(itemRequest);
+        log.info("запрос вещи добавлен: {}", created);
 
         return ItemRequestMapper.toItemRequestResponseDto(created);
     }
@@ -50,6 +51,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         Collection<ItemRequest> itemRequests = itemRequestRepository
                 .findAllByRequesterId(userId);
+        log.info("список запросов вещей пользователя {} : {}", user, itemRequests);
 
         return itemRequests.stream()
                 .map(ItemRequestMapper::toItemRequestResponseDto)
@@ -64,6 +66,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         List<ItemRequest> itemRequests = itemRequestRepository
                 .findAllByRequester_IdNotOrderByCreatedDesc(userId, PageRequest.of(from / size, size));
+        log.info("список запросов вещей от других пользователей: {}", itemRequests);
 
         return itemRequests.stream()
                 .map(ItemRequestMapper::toItemRequestResponseDto)
@@ -82,6 +85,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             log.error(message);
             throw new ItemRequestNotFoundException(message);
         }
+        log.info("запрос вещи {} по id {}", itemRequest.get(), requestId);
 
         return ItemRequestMapper.toItemRequestResponseDto(itemRequest.get());
     }
