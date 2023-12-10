@@ -11,8 +11,7 @@ public interface ItemRequestService {
 
     Collection<ItemRequestResponseDto> getUserItemRequests(Long userId);
 
-    Collection<ItemRequestResponseDto> getItemRequestFromOtherUsers(Long userId, Optional<Integer> fromOpt,
-                                                                    Optional<Integer> sizeOpt);
+    Collection<ItemRequestResponseDto> getItemRequestFromOtherUsers(Long userId, Integer from, Integer size);
 
     ItemRequestResponseDto getItemRequestById(Long userId, Long requestId);
 }

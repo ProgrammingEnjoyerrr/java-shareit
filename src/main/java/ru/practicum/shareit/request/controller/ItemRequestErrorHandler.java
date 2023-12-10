@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.common.BaseErrorHandler;
 import ru.practicum.shareit.common.ErrorResponse;
 import ru.practicum.shareit.request.exception.ItemRequestNotFoundException;
-import ru.practicum.shareit.request.exception.WrongPaginationParameterException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 
 @RestControllerAdvice(value = "ru.practicum.shareit.request.controller")
@@ -22,11 +21,5 @@ public class ItemRequestErrorHandler extends BaseErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleUserNotFoundException(final UserNotFoundException e) {
         return commonErrorResponse(e, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleWrongPaginationParameterException(final WrongPaginationParameterException e) {
-        return commonErrorResponse(e, HttpStatus.BAD_REQUEST);
     }
 }
