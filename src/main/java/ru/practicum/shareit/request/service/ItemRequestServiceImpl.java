@@ -9,6 +9,7 @@ import ru.practicum.shareit.request.dto.ItemRequestMapper;
 import ru.practicum.shareit.request.dto.ItemRequestRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestResponseDto;
 import ru.practicum.shareit.request.exception.ItemRequestNotFoundException;
+import ru.practicum.shareit.request.exception.WrongPaginationParameterException;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
@@ -64,15 +65,19 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         if (fromOpt.isPresent()) {
             from = fromOpt.get();
             if (from < 0) {
-                throw new RuntimeException("fromOpt is negative");
+                String message = "from parameter is negative";
+                log.error(message);
+                throw new WrongPaginationParameterException(message);
             }
         }
 
         int size = 10;
         if (sizeOpt.isPresent()) {
             size = sizeOpt.get();
-            if (size < 0) {
-                throw new RuntimeException("sizeOpt is negative");
+            if (size <= 0) {
+                String message = "size parameter is negative or equal to 0";
+                log.error(message);
+                throw new WrongPaginationParameterException(message);
             }
         }
 

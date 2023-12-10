@@ -43,8 +43,8 @@ public class ItemRequestController {
 
     @GetMapping(value = "/all")
     Collection<ItemRequestResponseDto> getItemRequestFromOtherUsers(@RequestHeader(value = USER_ID_HEADER) Long userId,
-                                                                    @RequestParam Optional<Integer> fromOpt,
-                                                                    @RequestParam Optional<Integer> sizeOpt) {
+                                                                    @RequestParam(name = "from") Optional<Integer> fromOpt,
+                                                                    @RequestParam(name = "size") Optional<Integer> sizeOpt) {
         log.info("got request GET /requests/all");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, userId);
         fromOpt.ifPresent(from -> log.info("from = {}", from));
