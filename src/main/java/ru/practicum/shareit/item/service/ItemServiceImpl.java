@@ -113,10 +113,7 @@ public class ItemServiceImpl implements ItemService {
             CommentCreateResponseDto commentDto = new CommentCreateResponseDto();
             commentDto.setId(comment.getId());
             commentDto.setText(comment.getText());
-
-            User author = userRepository.findById(comment.getAuthorId())
-                    .orElseThrow(() -> generateUserNotFoundException(comment.getAuthorId()));
-            commentDto.setAuthorName(author.getName());
+            commentDto.setAuthorName(comment.getAuthor().getName());
             commentDto.setCreated(comment.getCreated());
             cmts.add(commentDto);
         }
@@ -131,7 +128,6 @@ public class ItemServiceImpl implements ItemService {
         }
 
         if (!bookings.isEmpty()) {
-//            Booking lastBooking = bookings.get(bookings.size() - 1);
             List<Booking> bookingsBeforeNow = bookings.stream()
                     .filter(b -> b.getStartDate().isBefore(now))
                     .collect(Collectors.toList());
@@ -227,8 +223,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public CommentCreateResponseDto addComment(Long userId, Long itemId, CommentDto commentDto) {
-        // Add comment to item 1 from user5 failed by future booking
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> generateUserNotFoundException(userId));
 
@@ -260,8 +254,8 @@ public class ItemServiceImpl implements ItemService {
 
         Comment comment = new Comment();
         comment.setText(commentDto.getText());
-        comment.setItemId(itemId);
-        comment.setAuthorId(userId);
+        comment.setItem(itemRepository.findById(itemId).orElseThrow(() -> generateItemNotFoundException(itemId)));
+        comment.setAuthor(user);
         comment.setCreated(LocalDateTime.now());
 
         Comment saved = commentRepository.save(comment);
