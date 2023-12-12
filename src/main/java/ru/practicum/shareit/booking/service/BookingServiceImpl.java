@@ -51,7 +51,8 @@ public class BookingServiceImpl implements BookingService {
             throw new ItemIsUnavailableException("предмет с id " + itemId + " не доступен");
         }
 
-        Long ownerId = item.getOwnerId();
+        User owner = item.getOwner();
+        Long ownerId = owner.getId();
         if (userId.equals(ownerId)) {
             String message = "Пользователь с id = {" + userId + "} и так является владельцем предместа с id = {" + itemId + "}";
             log.error(message);
@@ -94,8 +95,9 @@ public class BookingServiceImpl implements BookingService {
         Long itemId = booking.getItemId();
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
-        Long ownerId = item.getOwnerId();
 
+        User owner = item.getOwner();
+        Long ownerId = owner.getId();
         if (!userId.equals(ownerId)) {
             String message = "Подтверждение или отклонение запроса на бронирование может быть выполнено только владельцем вещи; " +
                     "userId{" + userId + "} != bookerId{" + ownerId + "}";
@@ -139,7 +141,9 @@ public class BookingServiceImpl implements BookingService {
         Long itemId = booking.getItemId();
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
-        Long ownerId = item.getOwnerId();
+
+        User owner = item.getOwner();
+        Long ownerId = owner.getId();
         log.info("userId = {}, bookerId = {}, ownerId = {}", userId, bookerId, ownerId);
         if (!userId.equals(bookerId) && (!userId.equals(ownerId))) {
             String message = "Получение данных о конкретном бронировании может быть выполнено " +
@@ -255,7 +259,7 @@ public class BookingServiceImpl implements BookingService {
             Long itemId = b.getItemId();
             Item item = itemRepository.findById(itemId)
                     .orElseThrow(() -> generateItemNotFoundException(itemId));
-            return item.getOwnerId().equals(owner.getId());
+            return item.getOwner().getId().equals(owner.getId());
         }).collect(Collectors.toList());
 
         List<BookingCreateResponseDto> response = neededBookings.stream()

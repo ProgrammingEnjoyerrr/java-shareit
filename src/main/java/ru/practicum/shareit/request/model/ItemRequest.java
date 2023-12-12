@@ -33,5 +33,5 @@ public class ItemRequest {
 
     @OneToMany
     @JoinColumn(name = "request_id")
-    private List<Item> items = new ArrayList<>();
+    private List<Item> items;
 }

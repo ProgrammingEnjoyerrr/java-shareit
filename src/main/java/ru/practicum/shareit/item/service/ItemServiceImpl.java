@@ -46,9 +46,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public ItemDto createItem(Long userId, ItemDto itemDto) {
-        ensureUserExists(userId);
+        User owner = ensureUserExists(userId);
 
-        Item item = ItemMapper.toItem(itemDto, userId);
+        Item item = ItemMapper.toItem(itemDto, owner);
 
         if (itemDto.getRequestId() != null) {
             ItemRequest itemRequest = itemRequestRepository.getReferenceById(itemDto.getRequestId());
@@ -275,14 +275,17 @@ public class ItemServiceImpl implements ItemService {
         return response;
     }
 
-    private void ensureUserExists(Long userId) {
-        if (!userRepository.existsById(userId)) {
+    private User ensureUserExists(Long userId) {
+        Optional<User> userOpt = userRepository.findById(userId);
+
+        if (userOpt.isEmpty()) {
             String message = "пользователь с id " + userId + " не существует";
             log.error(message);
             throw new UserNotFoundException(message);
         }
 
         log.info("пользователь с id {} найден", userId);
+        return userOpt.get();
     }
 
     private void ensureItemExists(Long itemId) {
@@ -298,7 +301,7 @@ public class ItemServiceImpl implements ItemService {
     private void ensureUserIsOwner(Long userId, Long itemId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
-        if (!item.getOwnerId().equals(userId)) {
+        if (!item.getOwner().getId().equals(userId)) {
             String message = "пользователь с id " + userId +
                     " не является владельцем предмета с id " + itemId;
             log.error(message);
@@ -314,7 +317,7 @@ public class ItemServiceImpl implements ItemService {
                 .name(itemToUpdate.getName() != null ? itemToUpdate.getName() : oldItem.getName())
                 .description(itemToUpdate.getDescription() != null ? itemToUpdate.getDescription() : oldItem.getDescription())
                 .available(itemToUpdate.getAvailable() != null ? itemToUpdate.getAvailable() : oldItem.getAvailable())
-                .ownerId(oldItem.getOwnerId())
+                .owner(itemToUpdate.getOwner() != null ? itemToUpdate.getOwner() : oldItem.getOwner())
                 .build();
     }
 
