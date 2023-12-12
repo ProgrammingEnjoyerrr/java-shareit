@@ -15,13 +15,9 @@ import java.util.List;
 public interface BookingRepository extends PagingAndSortingRepository<Booking, Long> {
     @Query("select b " +
             "from Booking as b " +
-            "where b.bookerId = ?1 " +
+            "where b.booker.id = ?1 " +
             "order by b.startDate desc")
     List<Booking> findAllBookingsForBookerByStatus(Long bookerId, Pageable pageable);
-
-    List<Booking> findByBookerIdAndEndDateIsBefore(Long bookerId, LocalDateTime endDate, Sort sort);
-
-    List<Booking> findByBookerId(Long bookerId, Sort sort);
 
     List<Booking> findByBookerId(Long bookerId);
 

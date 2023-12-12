@@ -136,7 +136,8 @@ public class ItemServiceImpl implements ItemService {
             } else {
                 Booking lastBooking = bookingsBeforeNow.get(0);
                 log.info("lastBooking = {}", lastBooking);
-                dto.setLastBooking(new ItemWithBookingDto.BookingMetaData(lastBooking.getId(), lastBooking.getBookerId()));
+                dto.setLastBooking(new ItemWithBookingDto.BookingMetaData(
+                        lastBooking.getId(), lastBooking.getBooker().getId()));
                 if (bookings.size() == 1) {
                     log.info("only 1 booking");
                     return dto;
@@ -150,7 +151,8 @@ public class ItemServiceImpl implements ItemService {
 
             Booking nextBooking = afterNow.get(afterNow.size() - 1);
             log.info("nextBooking = {}", nextBooking);
-            dto.setNextBooking(new ItemWithBookingDto.BookingMetaData(nextBooking.getId(), nextBooking.getBookerId()));
+            dto.setNextBooking(new ItemWithBookingDto.BookingMetaData(
+                    nextBooking.getId(), nextBooking.getBooker().getId()));
         }
 
         return dto;
@@ -187,7 +189,8 @@ public class ItemServiceImpl implements ItemService {
             if (!bookings.isEmpty()) {
                 Booking lastBooking = bookings.get(bookings.size() - 1);
                 log.info("lastBooking = {}", lastBooking);
-                dto.setLastBooking(new ItemWithBookingDto.BookingMetaData(lastBooking.getId(), lastBooking.getBookerId()));
+                dto.setLastBooking(new ItemWithBookingDto.BookingMetaData(
+                        lastBooking.getId(), lastBooking.getBooker().getId()));
                 if (bookings.size() == 1) {
                     log.info("only 1 booking");
                     dtos.add(dto);
@@ -201,7 +204,8 @@ public class ItemServiceImpl implements ItemService {
 
                 Booking nextBooking = afterNow.get(afterNow.size() - 1);
                 log.info("nextBooking = {}", nextBooking);
-                dto.setNextBooking(new ItemWithBookingDto.BookingMetaData(nextBooking.getId(), nextBooking.getBookerId()));
+                dto.setNextBooking(new ItemWithBookingDto.BookingMetaData(
+                        nextBooking.getId(), nextBooking.getBooker().getId()));
                 dtos.add(dto);
             }
         }
@@ -229,7 +233,7 @@ public class ItemServiceImpl implements ItemService {
         // check that user booked item
         List<Booking> userBookings = bookingRepository.findByBookerId(userId);
         Optional<Booking> bookingOpt = userBookings.stream()
-                .filter(b -> b.getItemId().equals(itemId))
+                .filter(b -> b.getItem().getId().equals(itemId))
                 .findFirst();
         if (bookingOpt.isEmpty()) {
             String message = "Пользователь с id {" + userId + "} не является владельцем предмета с id {" + itemId + "}";

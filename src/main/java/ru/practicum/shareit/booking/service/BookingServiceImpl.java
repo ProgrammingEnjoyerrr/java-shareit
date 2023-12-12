@@ -64,8 +64,10 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = new Booking();
         booking.setStartDate(bookingCreateRequestDto.getStart());
         booking.setEndDate(bookingCreateRequestDto.getEnd());
-        booking.setBookerId(userId);
-        booking.setItemId(bookingCreateRequestDto.getItemId());
+//        booking.setBookerId(userId);
+//        booking.setItemId(bookingCreateRequestDto.getItemId());
+        booking.setBooker(user);
+        booking.setItem(item);
         booking.setStatus(BookingStatus.WAITING);
         Booking saved = bookingRepository.save(booking);
 
@@ -92,7 +94,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingAlreadyRefinedException(message);
         }
 
-        Long itemId = booking.getItemId();
+        Long itemId = booking.getItem().getId();
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
 
@@ -118,7 +120,7 @@ public class BookingServiceImpl implements BookingService {
         response.setEnd(updated.getEndDate());
         response.setStatus(updated.getStatus());
 
-        Long bookerId = booking.getBookerId();
+        Long bookerId = booking.getBooker().getId();
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> generateUserNotFoundException(bookerId));
         response.setBooker(booker);
@@ -134,11 +136,11 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> generateBookingNotFoundException(bookingId));
 
-        Long bookerId = booking.getBookerId();
+        Long bookerId = booking.getBooker().getId();
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> generateUserNotFoundException(bookerId));
 
-        Long itemId = booking.getItemId();
+        Long itemId = booking.getItem().getId();
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
 
@@ -185,7 +187,7 @@ public class BookingServiceImpl implements BookingService {
                     dto.setStatus(booking.getStatus());
                     dto.setBooker(booker);
 
-                    Long itemId = booking.getItemId();
+                    Long itemId = booking.getItem().getId();
                     Item item = itemRepository.findById(itemId)
                             .orElseThrow(() -> generateItemNotFoundException(itemId));
                     dto.setItem(item);
@@ -256,7 +258,7 @@ public class BookingServiceImpl implements BookingService {
         log.info("found {} bookings: {}", allBookings.size(), allBookings);
 
         List<Booking> neededBookings = allBookings.stream().filter(b -> {
-            Long itemId = b.getItemId();
+            Long itemId = b.getItem().getId();
             Item item = itemRepository.findById(itemId)
                     .orElseThrow(() -> generateItemNotFoundException(itemId));
             return item.getOwner().getId().equals(owner.getId());
@@ -270,12 +272,12 @@ public class BookingServiceImpl implements BookingService {
                     dto.setEnd(booking.getEndDate());
                     dto.setStatus(booking.getStatus());
 
-                    Long bookerId = booking.getBookerId();
+                    Long bookerId = booking.getBooker().getId();
                     User booker = userRepository.findById(bookerId)
                             .orElseThrow(() -> generateUserNotFoundException(bookerId));
                     dto.setBooker(booker);
 
-                    Long itemId = booking.getItemId();
+                    Long itemId = booking.getItem().getId();
                     Item item = itemRepository.findById(itemId)
                             .orElseThrow(() -> generateItemNotFoundException(itemId));
                     dto.setItem(item);
