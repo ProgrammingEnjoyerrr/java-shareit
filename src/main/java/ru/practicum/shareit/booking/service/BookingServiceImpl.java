@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -64,20 +63,12 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = new Booking();
         booking.setStartDate(bookingCreateRequestDto.getStart());
         booking.setEndDate(bookingCreateRequestDto.getEnd());
-//        booking.setBookerId(userId);
-//        booking.setItemId(bookingCreateRequestDto.getItemId());
         booking.setBooker(user);
         booking.setItem(item);
         booking.setStatus(BookingStatus.WAITING);
         Booking saved = bookingRepository.save(booking);
 
-        BookingCreateResponseDto response = new BookingCreateResponseDto();
-        response.setId(saved.getId());
-        response.setStart(saved.getStartDate());
-        response.setEnd(saved.getEndDate());
-        response.setStatus(saved.getStatus());
-        response.setBooker(user);
-        response.setItem(item);
+        BookingCreateResponseDto response = toResponseDto(saved);
 
         return response;
     }
@@ -94,9 +85,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BookingAlreadyRefinedException(message);
         }
 
-        Long itemId = booking.getItem().getId();
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> generateItemNotFoundException(itemId));
+        Item item = booking.getItem();
 
         User owner = item.getOwner();
         Long ownerId = owner.getId();
@@ -114,18 +103,7 @@ public class BookingServiceImpl implements BookingService {
 
         Booking updated = bookingRepository.save(booking);
 
-        BookingCreateResponseDto response = new BookingCreateResponseDto();
-        response.setId(updated.getId());
-        response.setStart(updated.getStartDate());
-        response.setEnd(updated.getEndDate());
-        response.setStatus(updated.getStatus());
-
-        Long bookerId = booking.getBooker().getId();
-        User booker = userRepository.findById(bookerId)
-                .orElseThrow(() -> generateUserNotFoundException(bookerId));
-        response.setBooker(booker);
-
-        response.setItem(item);
+        BookingCreateResponseDto response = toResponseDto(updated);
 
         return response;
     }
@@ -136,14 +114,10 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> generateBookingNotFoundException(bookingId));
 
-        Long bookerId = booking.getBooker().getId();
-        User booker = userRepository.findById(bookerId)
-                .orElseThrow(() -> generateUserNotFoundException(bookerId));
+        User booker = booking.getBooker();
+        Long bookerId = booker.getId();
 
-        Long itemId = booking.getItem().getId();
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> generateItemNotFoundException(itemId));
-
+        Item item = booking.getItem();
         User owner = item.getOwner();
         Long ownerId = owner.getId();
         log.info("userId = {}, bookerId = {}, ownerId = {}", userId, bookerId, ownerId);
@@ -154,13 +128,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ForbiddenAccessException(message);
         }
 
-        BookingCreateResponseDto response = new BookingCreateResponseDto();
-        response.setId(booking.getId());
-        response.setStart(booking.getStartDate());
-        response.setEnd(booking.getEndDate());
-        response.setStatus(booking.getStatus());
-        response.setBooker(booker);
-        response.setItem(item);
+        BookingCreateResponseDto response = toResponseDto(booking);
 
         return response;
     }
@@ -172,27 +140,13 @@ public class BookingServiceImpl implements BookingService {
         Pageable pageable = PageRequest.of(from / size, size);
         BookingState state = fromString(stateStr);
 
-        User booker = userRepository.findById(bookerId)
-                .orElseThrow(() -> generateUserNotFoundException(bookerId));
+        userRepository.findById(bookerId).orElseThrow(() -> generateUserNotFoundException(bookerId));
 
         List<Booking> bookings = bookingRepository.findAllBookingsForBookerByStatus(bookerId, pageable);
         log.info("findAllBookingsForBooker bookings = {}", bookings);
 
         List<BookingCreateResponseDto> response = bookings.stream()
-                .map(booking -> {
-                    BookingCreateResponseDto dto = new BookingCreateResponseDto();
-                    dto.setId(booking.getId());
-                    dto.setStart(booking.getStartDate());
-                    dto.setEnd(booking.getEndDate());
-                    dto.setStatus(booking.getStatus());
-                    dto.setBooker(booker);
-
-                    Long itemId = booking.getItem().getId();
-                    Item item = itemRepository.findById(itemId)
-                            .orElseThrow(() -> generateItemNotFoundException(itemId));
-                    dto.setItem(item);
-                    return dto;
-                })
+                .map(this::toResponseDto)
                 .collect(Collectors.toList());
         log.info("findAllBookingsForBooker response = {}", response);
 
@@ -244,8 +198,7 @@ public class BookingServiceImpl implements BookingService {
         Pageable pageable = PageRequest.of(from / size, size, Sort.by("id").descending());
         BookingState state = fromString(stateStr);
 
-        User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> generateUserNotFoundException(ownerId));
+        userRepository.findById(ownerId).orElseThrow(() -> generateUserNotFoundException(ownerId));
 
         Collection<Item> neededItems = itemRepository.findAllByOwnerId(ownerId);
         log.info("found {} needed items: {}", neededItems.size(), neededItems);
@@ -258,31 +211,13 @@ public class BookingServiceImpl implements BookingService {
         log.info("found {} bookings: {}", allBookings.size(), allBookings);
 
         List<Booking> neededBookings = allBookings.stream().filter(b -> {
-            Long itemId = b.getItem().getId();
-            Item item = itemRepository.findById(itemId)
-                    .orElseThrow(() -> generateItemNotFoundException(itemId));
-            return item.getOwner().getId().equals(owner.getId());
+            Item item = b.getItem();
+            return item.getOwner().getId().equals(ownerId);
         }).collect(Collectors.toList());
 
         List<BookingCreateResponseDto> response = neededBookings.stream()
-                .map(booking -> {
-                    BookingCreateResponseDto dto = new BookingCreateResponseDto();
-                    dto.setId(booking.getId());
-                    dto.setStart(booking.getStartDate());
-                    dto.setEnd(booking.getEndDate());
-                    dto.setStatus(booking.getStatus());
-
-                    Long bookerId = booking.getBooker().getId();
-                    User booker = userRepository.findById(bookerId)
-                            .orElseThrow(() -> generateUserNotFoundException(bookerId));
-                    dto.setBooker(booker);
-
-                    Long itemId = booking.getItem().getId();
-                    Item item = itemRepository.findById(itemId)
-                            .orElseThrow(() -> generateItemNotFoundException(itemId));
-                    dto.setItem(item);
-                    return dto;
-                }).sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
+                .map(this::toResponseDto)
+                .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
                 .collect(Collectors.toList());
 
         if (state.equals(BookingState.ALL)) {
@@ -352,5 +287,16 @@ public class BookingServiceImpl implements BookingService {
             log.error(message);
             throw new BookingStateConversionException(message);
         }
+    }
+
+    private BookingCreateResponseDto toResponseDto(final Booking booking) {
+        BookingCreateResponseDto dto = new BookingCreateResponseDto();
+        dto.setId(booking.getId());
+        dto.setStart(booking.getStartDate());
+        dto.setEnd(booking.getEndDate());
+        dto.setStatus(booking.getStatus());
+        dto.setBooker(booking.getBooker());
+        dto.setItem(booking.getItem());
+        return dto;
     }
 }
