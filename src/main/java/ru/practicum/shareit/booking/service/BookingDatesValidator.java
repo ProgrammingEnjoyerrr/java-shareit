@@ -19,7 +19,7 @@ public class BookingDatesValidator {
         }
 
         if (end.isBefore(now)) {
-            throw new BookingDatesValidatorException("финиш в прошлом");
+            throw new BookingDatesValidatorException("дата окончания не может быть раньше или равна дате начала");
         }
 
         if (end.isBefore(start)) {

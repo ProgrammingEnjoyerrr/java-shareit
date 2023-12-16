@@ -14,6 +14,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "items", schema = "public")
 @ToString
+@EqualsAndHashCode
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

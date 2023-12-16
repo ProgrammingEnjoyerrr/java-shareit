@@ -274,7 +274,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private BookingNotFoundException generateBookingNotFoundException(long bookingId) {
-        String message = "бронирование с id " + bookingId + " не существует";
+        String message = "бронирования с id " + bookingId + " не существует";
         log.error(message);
         return new BookingNotFoundException(message);
     }
