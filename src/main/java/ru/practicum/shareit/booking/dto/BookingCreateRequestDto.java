@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.dto;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @ToString
 @Builder
+@EqualsAndHashCode
 public class BookingCreateRequestDto {
     private Long itemId;
 
