@@ -18,7 +18,7 @@ public class BookingMapper {
         return booking;
     }
 
-    public BookingCreateResponseDto toBookingOut(Booking booking) {
+    public BookingCreateResponseDto toBookingCreateResponseDto(Booking booking) {
         return new BookingCreateResponseDto(
                 booking.getId(),
                 booking.getStartDate(),
@@ -28,10 +28,4 @@ public class BookingMapper {
                 booking.getItem()
         );
     }
-
-//    public static BookingItemDto toBookingItemDto(Booking booking) {
-//        return new BookingItemDto(
-//                booking.getId(),
-//                booking.getBooker().getId());
-//    }
 }

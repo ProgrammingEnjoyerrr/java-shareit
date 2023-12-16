@@ -103,7 +103,7 @@ class BookingServiceImplTest {
 
     @Test
     void addBooking() {
-        BookingCreateResponseDto expectedBookingCreateResponseDto = BookingMapper.toBookingOut(BookingMapper.toBooking(user, item, bookingDto));
+        BookingCreateResponseDto expectedBookingCreateResponseDto = BookingMapper.toBookingCreateResponseDto(BookingMapper.toBooking(user, item, bookingDto));
 
         when(userRepository.findById(userDto.getId())).thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
@@ -212,7 +212,7 @@ class BookingServiceImplTest {
 
     @Test
     void getBookingData() {
-        BookingCreateResponseDto expectedBookingCreateResponseDto = BookingMapper.toBookingOut(booking);
+        BookingCreateResponseDto expectedBookingCreateResponseDto = BookingMapper.toBookingCreateResponseDto(booking);
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
 
         BookingCreateResponseDto actualBookingCreateResponseDto = bookingService.getBookingData(user.getId(), booking.getId());
@@ -247,7 +247,7 @@ class BookingServiceImplTest {
 
     @Test
     void findAllBookingsForBooker_WhenBookingStateAll() {
-        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingOut(booking));
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(bookingRepository.findAllBookingsForBookerByStatus(anyLong(), any())).thenReturn(List.of(booking));
 
@@ -269,7 +269,7 @@ class BookingServiceImplTest {
     @Test
     void getAllByOwnerWhenBookingStateAll() {
         user.setId(2L);
-        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingOut(booking));
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(bookingRepository.findByItemIdIn(any(), any())).thenReturn(List.of(booking));
 

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingCreateRequestDto;
 import ru.practicum.shareit.booking.dto.BookingCreateResponseDto;
+import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.exception.*;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingState;
@@ -60,17 +61,11 @@ public class BookingServiceImpl implements BookingService {
 
         BookingDatesValidator.validate(bookingCreateRequestDto);
 
-        Booking booking = new Booking();
-        booking.setStartDate(bookingCreateRequestDto.getStart());
-        booking.setEndDate(bookingCreateRequestDto.getEnd());
-        booking.setBooker(user);
-        booking.setItem(item);
-        booking.setStatus(BookingStatus.WAITING);
+        Booking booking = BookingMapper.toBooking(user, item, bookingCreateRequestDto);
+
         Booking saved = bookingRepository.save(booking);
 
-        BookingCreateResponseDto response = toResponseDto(saved);
-
-        return response;
+        return BookingMapper.toBookingCreateResponseDto(saved);
     }
 
     @Override
@@ -103,9 +98,7 @@ public class BookingServiceImpl implements BookingService {
 
         Booking updated = bookingRepository.save(booking);
 
-        BookingCreateResponseDto response = toResponseDto(updated);
-
-        return response;
+        return BookingMapper.toBookingCreateResponseDto(updated);
     }
 
     @Override
@@ -128,9 +121,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ForbiddenAccessException(message);
         }
 
-        BookingCreateResponseDto response = toResponseDto(booking);
-
-        return response;
+        return BookingMapper.toBookingCreateResponseDto(booking);
     }
 
     @Override
@@ -146,7 +137,7 @@ public class BookingServiceImpl implements BookingService {
         log.info("findAllBookingsForBooker bookings = {}", bookings);
 
         List<BookingCreateResponseDto> response = bookings.stream()
-                .map(this::toResponseDto)
+                .map(BookingMapper::toBookingCreateResponseDto)
                 .collect(Collectors.toList());
         log.info("findAllBookingsForBooker response = {}", response);
 
@@ -216,7 +207,7 @@ public class BookingServiceImpl implements BookingService {
         }).collect(Collectors.toList());
 
         List<BookingCreateResponseDto> response = neededBookings.stream()
-                .map(this::toResponseDto)
+                .map(BookingMapper::toBookingCreateResponseDto)
                 .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
                 .collect(Collectors.toList());
 
@@ -287,16 +278,5 @@ public class BookingServiceImpl implements BookingService {
             log.error(message);
             throw new BookingStateConversionException(message);
         }
-    }
-
-    private BookingCreateResponseDto toResponseDto(final Booking booking) {
-        BookingCreateResponseDto dto = new BookingCreateResponseDto();
-        dto.setId(booking.getId());
-        dto.setStart(booking.getStartDate());
-        dto.setEnd(booking.getEndDate());
-        dto.setStatus(booking.getStatus());
-        dto.setBooker(booking.getBooker());
-        dto.setItem(booking.getItem());
-        return dto;
     }
 }
