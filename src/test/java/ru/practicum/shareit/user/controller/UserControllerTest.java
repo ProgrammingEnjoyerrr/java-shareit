@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
+import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.nio.charset.StandardCharsets;
@@ -101,6 +102,20 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(userDto.getName())))
                 .andExpect(jsonPath("$.email", is(userDto.getEmail())));
+
+        verify(userService, times(1)).getUserById(userId);
+    }
+
+    @Test
+    @SneakyThrows
+    void getUserById_throwsNotFound() {
+        long userId = userDto.getId();
+
+        when(userService.getUserById(userId)).thenThrow(UserNotFoundException.class);
+
+        mvc.perform(get("/users/{userId}", userId)
+                        .accept(MediaType.ALL))
+                .andExpect(status().isNotFound());
 
         verify(userService, times(1)).getUserById(userId);
     }
