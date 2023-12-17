@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingCreateRequestDto;
 import ru.practicum.shareit.booking.dto.BookingCreateResponseDto;
 import ru.practicum.shareit.booking.exception.BookingNotFoundException;
@@ -20,17 +22,21 @@ import java.util.Collection;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+@Transactional
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Disabled
+@Tag("IntegrationTest")
 public class BookingServiceITTest {
 
-    private final BookingService bookingService;
+    @Autowired
+    private BookingService bookingService;
 
-    private final UserService userService;
+    @Autowired
+    private UserService userService;
 
-    private final ItemService itemService;
+    @Autowired
+    private ItemService itemService;
 
     private final UserDto userDto1 = UserDto.builder()
             .name("name1")
