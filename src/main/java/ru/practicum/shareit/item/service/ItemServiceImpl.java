@@ -11,8 +11,11 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentDtoResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.dto.mapper.CommentMapper;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
-import ru.practicum.shareit.item.exception.*;
+import ru.practicum.shareit.item.exception.ItemNotFoundException;
+import ru.practicum.shareit.item.exception.UserIsNotBookerException;
+import ru.practicum.shareit.item.exception.UserIsNotOwnerException;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
@@ -161,47 +164,21 @@ public class ItemServiceImpl implements ItemService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> generateUserNotFoundException(userId));
 
-        // check that user booked item
-        List<Booking> userBookings = bookingRepository.findByBookerId(userId);
-        Optional<Booking> bookingOpt = userBookings.stream()
-                .filter(b -> b.getItem().getId().equals(itemId))
-                .findFirst();
-        if (bookingOpt.isEmpty()) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> generateItemNotFoundException(itemId));
+
+        List<Booking> userBookings = bookingRepository.findAllByUserBookings(userId, itemId, LocalDateTime.now());
+        if (userBookings.isEmpty()) {
             String message = "Пользователь с id {" + userId + "} не является владельцем предмета с id {" + itemId + "}";
             log.error(message);
             throw new UserIsNotBookerException(message);
         }
 
-        Booking booking = bookingOpt.get();
-        if (!booking.getStatus().equals(BookingStatus.APPROVED)) {
-            String message = "Бронирование с id {" + booking.getId() + "} не подтверждено. Текущий статус: {" + booking.getStatus() + "}";
-            log.error(message);
-            throw new BookingNotApprovedException(message);
-        }
-
-        LocalDateTime now = LocalDateTime.now();
-        if (booking.getStartDate().isAfter(now)) {
-            String message = "Невозможно добавить комментарий к бронированию, которое находится в будущем. " +
-                    "Текущее время {" + now + "}, время начала бронирования {" + booking.getStartDate() + "}";
-            log.error(message);
-            throw new BookingInFutureException(message);
-        }
-
-        Comment comment = new Comment();
-        comment.setText(commentDto.getText());
-        comment.setItem(itemRepository.findById(itemId).orElseThrow(() -> generateItemNotFoundException(itemId)));
-        comment.setAuthor(user);
-        comment.setCreated(LocalDateTime.now());
+        Comment comment = CommentMapper.toComment(commentDto, item, user);
 
         Comment saved = commentRepository.save(comment);
 
-        CommentDtoResponse response = new CommentDtoResponse();
-        response.setId(saved.getId());
-        response.setText(saved.getText());
-        response.setAuthorName(user.getName());
-        response.setCreated(saved.getCreated());
-
-        return response;
+        return CommentMapper.toCommentResponse(saved);
     }
 
     private User ensureUserExists(Long userId) {

@@ -153,4 +153,27 @@ class BookingRepositoryTest {
                 .usingRecursiveAssertion()
                 .isEqualTo(expected);
     }
+
+    @Test
+    void findAllByItemAndStatusOrderByStartDateAsc() {
+    }
+
+    @Test
+    void findAllByUserBookings() {
+        LocalDateTime dateTime = LocalDateTime.now();
+
+        List<Booking> bookings = bookingRepository.findAllByUserBookings(user.getId(), item.getId(), dateTime);
+
+        assertThat(bookings)
+                .isNotNull()
+                .isNotEmpty()
+                .hasSize(1);
+
+        Booking found = bookings.get(0);
+
+        assertThat(found.getId()).isEqualTo(2L);
+        assertThat(found.getItem()).isEqualTo(item);
+        assertThat(found.getBooker()).isEqualTo(user);
+        assertThat(found.getStatus()).isEqualTo(BookingStatus.APPROVED);
+    }
 }

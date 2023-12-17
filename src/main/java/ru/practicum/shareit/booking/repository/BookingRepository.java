@@ -8,6 +8,7 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.model.Item;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -27,4 +28,12 @@ public interface BookingRepository extends PagingAndSortingRepository<Booking, L
     List<Booking> findByItemIdIn(Collection<Long> ids, Pageable pageable);
 
     List<Booking> findAllByItemAndStatusOrderByStartDateAsc(Item item, BookingStatus bookingStatus);
+
+    @Query("SELECT b FROM Booking as b " +
+            "JOIN Item as i ON i.id = b.item.id " +
+            "WHERE b.booker.id = ?1 " +
+            "AND i.id = ?2 " +
+            "AND b.status = 'APPROVED' " +
+            "AND b.endDate < ?3 ")
+    List<Booking> findAllByUserBookings(Long userId, Long itemId, LocalDateTime dateTime);
 }
