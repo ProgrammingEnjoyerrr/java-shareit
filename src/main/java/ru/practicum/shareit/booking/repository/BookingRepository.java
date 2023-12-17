@@ -5,6 +5,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.item.model.Item;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,4 +25,6 @@ public interface BookingRepository extends PagingAndSortingRepository<Booking, L
     List<Booking> findAll();
 
     List<Booking> findByItemIdIn(Collection<Long> ids, Pageable pageable);
+
+    List<Booking> findAllByItemAndStatusOrderByStartDateAsc(Item item, BookingStatus bookingStatus);
 }

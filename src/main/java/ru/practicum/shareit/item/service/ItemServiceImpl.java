@@ -5,13 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.dto.BookingCreateResponseDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.item.dto.CommentDtoResponse;
-import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.exception.*;
 import ru.practicum.shareit.item.model.Comment;
@@ -93,72 +91,28 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
         log.info("найден предмет с id {}", item.getId());
 
-        List<Booking> allBookings = bookingRepository.findAll();
-        log.info("all bookings: {}", allBookings);
-
-        LocalDateTime now = LocalDateTime.now();
-        List<Booking> bookings = bookingRepository.findByItemId(itemId, Sort.by(Sort.Direction.DESC, "startDate"))
-                .stream().filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
-                .collect(Collectors.toList());
-        log.info("found bookings: {}", bookings);
-        List<Item> itemsOfOwner = new ArrayList<>(itemRepository.findAllByOwnerId(userId));
-        log.info("found items of owner: {}", itemsOfOwner);
-
-        ItemDtoWithBooking dto = new ItemDtoWithBooking();
-        dto.setId(item.getId());
-        dto.setName(item.getName());
-        dto.setDescription(item.getDescription());
-        dto.setAvailable(item.getAvailable());
-
         List<Comment> comments = commentRepository.findAllByItemId(itemId);
-        List<CommentDtoResponse> cmts = new ArrayList<>();
-        for (Comment comment : comments) {
-            CommentDtoResponse commentDto = new CommentDtoResponse();
-            commentDto.setId(comment.getId());
-            commentDto.setText(comment.getText());
-            commentDto.setAuthorName(comment.getAuthor().getName());
-            commentDto.setCreated(comment.getCreated());
-            cmts.add(commentDto);
-        }
-        dto.setComments(cmts);
 
-        Optional<Item> foundItem = itemsOfOwner.stream()
-                .filter(i -> i.getId().equals(itemId))
-                .findFirst();
-        if (foundItem.isEmpty()) {
-            log.info("user {} is not owner of item {}", userId, itemId);
+        if (!item.getOwner().getId().equals(userId)) {
+            log.info("пользователь {} не является владельцем предмета {}", userId, item);
+            return ItemMapper.toItemDtoWithBooking(item, comments);
+        }
+
+        BookingStatus status = BookingStatus.APPROVED;
+        List<Booking> bookings = bookingRepository.findAllByItemAndStatusOrderByStartDateAsc(item, status);
+        log.info("найденные бронирования для вещи {} со статусом {}: {}", item, status, bookings);
+
+        ItemDtoWithBooking dto = ItemMapper.toItemDtoWithBooking(item, comments);
+        if (bookings.isEmpty()) {
             return dto;
         }
 
-        if (!bookings.isEmpty()) {
-            List<Booking> bookingsBeforeNow = bookings.stream()
-                    .filter(b -> b.getStartDate().isBefore(now))
-                    .collect(Collectors.toList());
-            if (bookingsBeforeNow.isEmpty()) {
-                dto.setLastBooking(null);
-            } else {
-                Booking lastBooking = bookingsBeforeNow.get(0);
-                log.info("lastBooking = {}", lastBooking);
-                dto.setLastBooking(new ItemDtoWithBooking.BookingMetaData(
-                        lastBooking.getId(), lastBooking.getBooker().getId()));
-                if (bookings.size() == 1) {
-                    log.info("only 1 booking");
-                    return dto;
-                }
-            }
+        Booking lastBooking = getLastBooking(bookings, LocalDateTime.now());
+        log.info("последнее бронироварие: {}", lastBooking);
+        Booking nextBooking = getNextBooking(bookings, LocalDateTime.now());
+        log.info("следующее бронирование: {}", nextBooking);
 
-            List<Booking> afterNow = bookings.stream()
-                    .filter(b -> b.getStartDate().isAfter(now))
-                    .collect(Collectors.toList());
-            log.info("afterNow = {}", afterNow);
-
-            Booking nextBooking = afterNow.get(afterNow.size() - 1);
-            log.info("nextBooking = {}", nextBooking);
-            dto.setNextBooking(new ItemDtoWithBooking.BookingMetaData(
-                    nextBooking.getId(), nextBooking.getBooker().getId()));
-        }
-
-        return dto;
+        return ItemMapper.toItemDtoWithBooking(item, comments, lastBooking, nextBooking);
     }
 
     @Override
@@ -174,10 +128,11 @@ public class ItemServiceImpl implements ItemService {
         for (Item item : itemsOfOwner) {
             ItemDtoWithBooking dto = new ItemDtoWithBooking();
             Long itemId = item.getId();
-            dto.setId(item.getId());
-            dto.setName(item.getName());
-            dto.setDescription(item.getDescription());
-            dto.setAvailable(item.getAvailable());
+            dto.setItem(item);
+//            dto.setId(item.getId());
+//            dto.setName(item.getName());
+//            dto.setDescription(item.getDescription());
+//            dto.setAvailable(item.getAvailable());
 
             LocalDateTime now = LocalDateTime.now();
             List<Booking> bookings = bookingRepository.findByItemId(itemId, Sort.by(Sort.Direction.DESC, "startDate"))
@@ -192,7 +147,7 @@ public class ItemServiceImpl implements ItemService {
             if (!bookings.isEmpty()) {
                 Booking lastBooking = bookings.get(bookings.size() - 1);
                 log.info("lastBooking = {}", lastBooking);
-                dto.setLastBooking(new ItemDtoWithBooking.BookingMetaData(
+                dto.setLastBooking(new BookingMetaData(
                         lastBooking.getId(), lastBooking.getBooker().getId()));
                 if (bookings.size() == 1) {
                     log.info("only 1 booking");
@@ -207,7 +162,7 @@ public class ItemServiceImpl implements ItemService {
 
                 Booking nextBooking = afterNow.get(afterNow.size() - 1);
                 log.info("nextBooking = {}", nextBooking);
-                dto.setNextBooking(new ItemDtoWithBooking.BookingMetaData(
+                dto.setNextBooking(new BookingMetaData(
                         nextBooking.getId(), nextBooking.getBooker().getId()));
                 dtos.add(dto);
             }
@@ -289,16 +244,6 @@ public class ItemServiceImpl implements ItemService {
         return userOpt.get();
     }
 
-    private void ensureItemExists(Long itemId) {
-        if (!itemRepository.existsById(itemId)) {
-            String message = "предмет с id " + itemId + " не существует";
-            log.error(message);
-            throw new ItemNotFoundException(message);
-        }
-
-        log.info("предмет с id {} найден", itemId);
-    }
-
     private void ensureUserIsOwner(final User user, final Item item) {
         final Long itemOwnerId = item.getOwner().getId();
         final Long userId = user.getId();
@@ -333,5 +278,29 @@ public class ItemServiceImpl implements ItemService {
         String message = "пользователь с id " + userId + " не существует";
         log.error(message);
         return new UserNotFoundException(message);
+    }
+
+    private Booking getLastBooking(List<Booking> bookings, LocalDateTime time) {
+        if (bookings == null || bookings.isEmpty()) {
+            return null;
+        }
+
+        return bookings
+                .stream()
+                .filter(booking -> !booking.getStartDate().isAfter(time))
+                .reduce((booking1, booking2) -> booking1.getStartDate().isAfter(booking2.getStartDate()) ? booking1 : booking2)
+                .orElse(null);
+    }
+
+    private Booking getNextBooking(List<Booking> bookings, LocalDateTime time) {
+        if (bookings == null || bookings.isEmpty()) {
+            return null;
+        }
+
+        return bookings
+                .stream()
+                .filter(booking -> booking.getStartDate().isAfter(time))
+                .findFirst()
+                .orElse(null);
     }
 }
