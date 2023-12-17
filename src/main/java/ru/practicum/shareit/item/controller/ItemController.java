@@ -44,7 +44,7 @@ public class ItemController {
     }
 
     @GetMapping(value = "/{itemId}")
-    public ItemWithBookingDto getItemByUserId(@RequestHeader(USER_ID_HEADER) Long userId,
+    public ItemDtoWithBooking getItemByUserId(@RequestHeader(USER_ID_HEADER) Long userId,
                                               @PathVariable("itemId") Long itemId) {
         log.info("got request GET /items/{itemId}");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
@@ -53,7 +53,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemWithBookingDto> getAllUserItems(@RequestHeader(USER_ID_HEADER) Long userId) {
+    public Collection<ItemDtoWithBooking> getAllUserItems(@RequestHeader(USER_ID_HEADER) Long userId) {
         log.info("got request GET /items");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         return itemService.getAllUserItems(userId);
@@ -73,9 +73,9 @@ public class ItemController {
     }
 
     @PostMapping(value = "/{itemId}/comment")
-    public CommentCreateResponseDto addComment(@RequestHeader(USER_ID_HEADER) Long userId,
-                                               @PathVariable("itemId") Long itemId,
-                                               @RequestBody @Valid final CommentDto commentDto) {
+    public CommentDtoResponse addComment(@RequestHeader(USER_ID_HEADER) Long userId,
+                                         @PathVariable("itemId") Long itemId,
+                                         @RequestBody @Valid final CommentDto commentDto) {
         log.info("got request POST /items/{itemId}/comment");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         log.info("itemId = {}", itemId);

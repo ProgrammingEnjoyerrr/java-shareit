@@ -8,10 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.item.dto.CommentCreateResponseDto;
+import ru.practicum.shareit.item.dto.CommentDtoResponse;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.exception.*;
 import ru.practicum.shareit.item.model.Comment;
@@ -86,7 +86,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public ItemWithBookingDto getItemById(Long userId, Long itemId) {
+    public ItemDtoWithBooking getItemById(Long userId, Long itemId) {
         ensureUserExists(userId);
 
         Item item = itemRepository.findById(itemId)
@@ -104,16 +104,16 @@ public class ItemServiceImpl implements ItemService {
         List<Item> itemsOfOwner = new ArrayList<>(itemRepository.findAllByOwnerId(userId));
         log.info("found items of owner: {}", itemsOfOwner);
 
-        ItemWithBookingDto dto = new ItemWithBookingDto();
+        ItemDtoWithBooking dto = new ItemDtoWithBooking();
         dto.setId(item.getId());
         dto.setName(item.getName());
         dto.setDescription(item.getDescription());
         dto.setAvailable(item.getAvailable());
 
         List<Comment> comments = commentRepository.findAllByItemId(itemId);
-        List<CommentCreateResponseDto> cmts = new ArrayList<>();
+        List<CommentDtoResponse> cmts = new ArrayList<>();
         for (Comment comment : comments) {
-            CommentCreateResponseDto commentDto = new CommentCreateResponseDto();
+            CommentDtoResponse commentDto = new CommentDtoResponse();
             commentDto.setId(comment.getId());
             commentDto.setText(comment.getText());
             commentDto.setAuthorName(comment.getAuthor().getName());
@@ -139,7 +139,7 @@ public class ItemServiceImpl implements ItemService {
             } else {
                 Booking lastBooking = bookingsBeforeNow.get(0);
                 log.info("lastBooking = {}", lastBooking);
-                dto.setLastBooking(new ItemWithBookingDto.BookingMetaData(
+                dto.setLastBooking(new ItemDtoWithBooking.BookingMetaData(
                         lastBooking.getId(), lastBooking.getBooker().getId()));
                 if (bookings.size() == 1) {
                     log.info("only 1 booking");
@@ -154,7 +154,7 @@ public class ItemServiceImpl implements ItemService {
 
             Booking nextBooking = afterNow.get(afterNow.size() - 1);
             log.info("nextBooking = {}", nextBooking);
-            dto.setNextBooking(new ItemWithBookingDto.BookingMetaData(
+            dto.setNextBooking(new ItemDtoWithBooking.BookingMetaData(
                     nextBooking.getId(), nextBooking.getBooker().getId()));
         }
 
@@ -163,16 +163,16 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional(readOnly = true)
-    public Collection<ItemWithBookingDto> getAllUserItems(Long userId) {
+    public Collection<ItemDtoWithBooking> getAllUserItems(Long userId) {
         ensureUserExists(userId);
 
         List<Item> itemsOfOwner = new ArrayList<>(itemRepository.findAllByOwnerId(userId));
         log.info("found items of owner: {}", itemsOfOwner);
 
-        List<ItemWithBookingDto> dtos = new ArrayList<>();
+        List<ItemDtoWithBooking> dtos = new ArrayList<>();
 
         for (Item item : itemsOfOwner) {
-            ItemWithBookingDto dto = new ItemWithBookingDto();
+            ItemDtoWithBooking dto = new ItemDtoWithBooking();
             Long itemId = item.getId();
             dto.setId(item.getId());
             dto.setName(item.getName());
@@ -192,7 +192,7 @@ public class ItemServiceImpl implements ItemService {
             if (!bookings.isEmpty()) {
                 Booking lastBooking = bookings.get(bookings.size() - 1);
                 log.info("lastBooking = {}", lastBooking);
-                dto.setLastBooking(new ItemWithBookingDto.BookingMetaData(
+                dto.setLastBooking(new ItemDtoWithBooking.BookingMetaData(
                         lastBooking.getId(), lastBooking.getBooker().getId()));
                 if (bookings.size() == 1) {
                     log.info("only 1 booking");
@@ -207,7 +207,7 @@ public class ItemServiceImpl implements ItemService {
 
                 Booking nextBooking = afterNow.get(afterNow.size() - 1);
                 log.info("nextBooking = {}", nextBooking);
-                dto.setNextBooking(new ItemWithBookingDto.BookingMetaData(
+                dto.setNextBooking(new ItemDtoWithBooking.BookingMetaData(
                         nextBooking.getId(), nextBooking.getBooker().getId()));
                 dtos.add(dto);
             }
@@ -229,7 +229,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public CommentCreateResponseDto addComment(Long userId, Long itemId, CommentDto commentDto) {
+    public CommentDtoResponse addComment(Long userId, Long itemId, CommentDto commentDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> generateUserNotFoundException(userId));
 
@@ -267,7 +267,7 @@ public class ItemServiceImpl implements ItemService {
 
         Comment saved = commentRepository.save(comment);
 
-        CommentCreateResponseDto response = new CommentCreateResponseDto();
+        CommentDtoResponse response = new CommentDtoResponse();
         response.setId(saved.getId());
         response.setText(saved.getText());
         response.setAuthorName(user.getName());

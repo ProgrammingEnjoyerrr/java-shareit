@@ -9,11 +9,11 @@ public interface ItemService {
 
     ItemDto updateItem(Long userId, Long itemId, ItemDto itemUpdateDto);
 
-    ItemWithBookingDto getItemById(Long userId, Long itemId);
+    ItemDtoWithBooking getItemById(Long userId, Long itemId);
 
-    Collection<ItemWithBookingDto> getAllUserItems(Long userId);
+    Collection<ItemDtoWithBooking> getAllUserItems(Long userId);
 
     Collection<ItemDto> getAvailableItemsByKeyWord(Long userId, String keyWord);
 
-    CommentCreateResponseDto addComment(Long userId, Long itemId, CommentDto commentDto);
+    CommentDtoResponse addComment(Long userId, Long itemId, CommentDto commentDto);
 }

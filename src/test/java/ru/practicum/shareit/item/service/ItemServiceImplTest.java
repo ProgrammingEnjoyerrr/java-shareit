@@ -53,13 +53,6 @@ class ItemServiceImplTest {
             .available(true)
             .build();
 
-//    private final ItemUpdateDto itemUpdateDto = ItemUpdateDto.builder()
-//            .id(itemDto.getId())
-//            .name("updated name")
-//            .description("updated description")
-//            .available(false)
-//            .build();
-
     private final User owner = User.builder()
             .id(200L)
             .name("name")
@@ -134,11 +127,13 @@ class ItemServiceImplTest {
 
         when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
         when(userRepository.findById(item.getOwner().getId())).thenReturn(Optional.of(owner));
+        when(itemRepository.save(item)).thenReturn(item);
 
         ItemDto response = itemService.updateItem(owner.getId(), itemDto.getId(), itemDto);
 
         assertThat(response).isEqualTo(itemDto);
 
+        verify(itemRepository, times(1)).findById(item.getId());
         verify(userRepository, times(1)).findById(item.getOwner().getId());
         verify(itemRepository, times(1)).save(item);
     }

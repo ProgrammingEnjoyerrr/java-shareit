@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class ItemWithBookingDto {
+public class ItemDtoWithBooking {
     private Long id;
 
     @NotBlank
@@ -29,7 +29,7 @@ public class ItemWithBookingDto {
 
     private BookingMetaData nextBooking;
 
-    private List<CommentCreateResponseDto> comments = new ArrayList<>();
+    private List<CommentDtoResponse> comments = new ArrayList<>();
 
     @Getter
     @Setter
