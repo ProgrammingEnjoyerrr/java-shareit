@@ -42,16 +42,4 @@ public class ItemErrorHandler extends BaseErrorHandler {
     public ErrorResponse handleUserIsNotBookerException(final UserIsNotBookerException e) {
         return commonErrorResponse(e, HttpStatus.BAD_REQUEST);
     }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleBookingNotApprovedException(final BookingNotApprovedException e) {
-        return commonErrorResponse(e, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleBookingInFutureException(final BookingInFutureException e) {
-        return commonErrorResponse(e, HttpStatus.BAD_REQUEST);
-    }
 }
