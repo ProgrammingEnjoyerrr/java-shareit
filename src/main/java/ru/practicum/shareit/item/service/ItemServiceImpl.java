@@ -102,9 +102,8 @@ public class ItemServiceImpl implements ItemService {
         List<Booking> bookings = bookingRepository.findAllByItemAndStatusOrderByStartDateAsc(item, status);
         log.info("найденные бронирования для вещи {} со статусом {}: {}", item, status, bookings);
 
-        ItemDtoWithBooking dto = ItemMapper.toItemDtoWithBooking(item, comments);
         if (bookings.isEmpty()) {
-            return dto;
+            return ItemMapper.toItemDtoWithBooking(item, comments);
         }
 
         Booking lastBooking = getLastBooking(bookings, LocalDateTime.now());
@@ -281,10 +280,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private Booking getLastBooking(List<Booking> bookings, LocalDateTime time) {
-        if (bookings == null || bookings.isEmpty()) {
-            return null;
-        }
-
         return bookings
                 .stream()
                 .filter(booking -> !booking.getStartDate().isAfter(time))
@@ -293,10 +288,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private Booking getNextBooking(List<Booking> bookings, LocalDateTime time) {
-        if (bookings == null || bookings.isEmpty()) {
-            return null;
-        }
-
         return bookings
                 .stream()
                 .filter(booking -> booking.getStartDate().isAfter(time))
