@@ -8,7 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.dto.CommentCreateResponseDto;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.exception.*;
 import ru.practicum.shareit.item.model.Comment;
@@ -68,7 +71,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
 
         User owner = ensureUserExists(userId);
-        ensureUserIsOwner(userId, itemId);
+        ensureUserIsOwner(owner, oldItem);
 
         itemUpdateDto.setId(itemId);
 
@@ -296,17 +299,18 @@ public class ItemServiceImpl implements ItemService {
         log.info("предмет с id {} найден", itemId);
     }
 
-    private void ensureUserIsOwner(Long userId, Long itemId) {
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> generateItemNotFoundException(itemId));
-        if (!item.getOwner().getId().equals(userId)) {
+    private void ensureUserIsOwner(final User user, final Item item) {
+        final Long itemOwnerId = item.getOwner().getId();
+        final Long userId = user.getId();
+
+        if (!itemOwnerId.equals(userId)) {
             String message = "пользователь с id " + userId +
-                    " не является владельцем предмета с id " + itemId;
+                    " не является владельцем предмета с id " + item.getId();
             log.error(message);
             throw new UserIsNotOwnerException(message);
         }
 
-        log.info("пользователь с id {} является владельцем предмета с id {}", userId, itemId);
+        log.info("пользователь с id {} является владельцем предмета с id {}", userId, item.getId());
     }
 
     private Item mapItemWithNullFields(final Item oldItem, final Item itemToUpdate) {

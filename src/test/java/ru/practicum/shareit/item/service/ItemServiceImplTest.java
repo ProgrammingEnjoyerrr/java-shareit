@@ -132,7 +132,7 @@ class ItemServiceImplTest {
     void updateItem() {
         Item item = ItemMapper.toItem(itemDto, owner);
 
-        when(itemRepository.findById(item.getId())).thenReturn(null);
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
         when(userRepository.findById(item.getOwner().getId())).thenReturn(Optional.of(owner));
 
         ItemDto response = itemService.updateItem(owner.getId(), itemDto.getId(), itemDto);
