@@ -15,19 +15,19 @@ public class BookingDatesValidator {
         LocalDateTime now = LocalDateTime.now();
 
         if (start.isBefore(now)) {
-            throw new BookingDatesValidatorException("старт в прошлом");
+            throw new BookingDatesValidatorException("дата начала не может находиться в прошлом");
         }
 
         if (end.isBefore(now)) {
-            throw new BookingDatesValidatorException("дата окончания не может быть раньше или равна дате начала");
+            throw new BookingDatesValidatorException("дата окончания не может быть в прошлом");
         }
 
         if (end.isBefore(start)) {
-            throw new BookingDatesValidatorException("финиш перед стартом");
+            throw new BookingDatesValidatorException("дата окончания не может быть перед датой начала");
         }
 
         if (end.isEqual(start)) {
-            throw new BookingDatesValidatorException("финиш и старт совпадают");
+            throw new BookingDatesValidatorException("дата окончания должна отличаться от даты начала");
         }
     }
 }

@@ -12,9 +12,11 @@ import ru.practicum.shareit.booking.exception.*;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.item.exception.ItemNotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.exception.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -94,13 +96,6 @@ class BookingServiceImplTest {
             .end(LocalDateTime.now().plusDays(2L))
             .build();
 
-
-    private final BookingCreateRequestDto bookingDtoEndBeforeStart = BookingCreateRequestDto.builder()
-            .itemId(1L)
-            .start(LocalDateTime.now().plusDays(1L))
-            .end(LocalDateTime.now().minusDays(1L))
-            .build();
-
     @Test
     void addBooking() {
         BookingCreateResponseDto expectedBookingCreateResponseDto = BookingMapper.toBookingCreateResponseDto(BookingMapper.toBooking(user, item, bookingDto));
@@ -120,20 +115,83 @@ class BookingServiceImplTest {
 
 
     @Test
-    void addBooking_WhenEndIsBeforeStart_ShouldThrowBookingDatesValidatorException() {
+    void addBooking_whenStartIsBeforeNow_shouldThrowBookingDatesValidatorException() {
+        final BookingCreateRequestDto bookingDtoStartIsBeforeNow = BookingCreateRequestDto.builder()
+                .itemId(1L)
+                .start(LocalDateTime.now().minusHours(2L))
+                .end(LocalDateTime.now().minusHours(1L))
+                .build();
+
         when(userRepository.findById(userDto.getId())).thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 
         assertThatExceptionOfType(BookingDatesValidatorException.class)
-                .isThrownBy(() -> bookingService.addBooking(userDto.getId(), bookingDtoEndBeforeStart))
-                .withMessage("дата окончания не может быть раньше или равна дате начала");
+                .isThrownBy(() -> bookingService.addBooking(userDto.getId(), bookingDtoStartIsBeforeNow))
+                .withMessage("дата начала не может находиться в прошлом");
 
         verify(userRepository, times(1)).findById(userDto.getId());
         verify(itemRepository, times(1)).findById(anyLong());
     }
 
     @Test
-    void addBooking_WhenItemIsNotAvailable_ShouldThrowItemIsUnavailableException() {
+    void addBooking_whenEndIsBeforeNow_shouldThrowBookingDatesValidatorException() {
+        final BookingCreateRequestDto bookingDtoEndBeforeStart = BookingCreateRequestDto.builder()
+                .itemId(1L)
+                .start(LocalDateTime.now().plusDays(1L))
+                .end(LocalDateTime.now().minusDays(1L))
+                .build();
+
+        when(userRepository.findById(userDto.getId())).thenReturn(Optional.of(user));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+
+        assertThatExceptionOfType(BookingDatesValidatorException.class)
+                .isThrownBy(() -> bookingService.addBooking(userDto.getId(), bookingDtoEndBeforeStart))
+                .withMessage("дата окончания не может быть в прошлом");
+
+        verify(userRepository, times(1)).findById(userDto.getId());
+        verify(itemRepository, times(1)).findById(anyLong());
+    }
+
+    @Test
+    void addBooking_whenEndIsBeforeStart_shouldThrowBookingDatesValidatorException() {
+        final BookingCreateRequestDto bookingDtoEndBeforeStart = BookingCreateRequestDto.builder()
+                .itemId(1L)
+                .start(LocalDateTime.now().plusDays(2L))
+                .end(LocalDateTime.now().plusDays(1L))
+                .build();
+
+        when(userRepository.findById(userDto.getId())).thenReturn(Optional.of(user));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+
+        assertThatExceptionOfType(BookingDatesValidatorException.class)
+                .isThrownBy(() -> bookingService.addBooking(userDto.getId(), bookingDtoEndBeforeStart))
+                .withMessage("дата окончания не может быть перед датой начала");
+
+        verify(userRepository, times(1)).findById(userDto.getId());
+        verify(itemRepository, times(1)).findById(anyLong());
+    }
+
+    @Test
+    void addBooking_whenEndIsEqualToStart_shouldThrowBookingDatesValidatorException() {
+        final BookingCreateRequestDto bookingDtoEndBeforeStart = BookingCreateRequestDto.builder()
+                .itemId(1L)
+                .start(LocalDateTime.now().plusDays(2L))
+                .end(LocalDateTime.now().plusDays(2L))
+                .build();
+
+        when(userRepository.findById(userDto.getId())).thenReturn(Optional.of(user));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+
+        assertThatExceptionOfType(BookingDatesValidatorException.class)
+                .isThrownBy(() -> bookingService.addBooking(userDto.getId(), bookingDtoEndBeforeStart))
+                .withMessage("дата окончания должна отличаться от даты начала");
+
+        verify(userRepository, times(1)).findById(userDto.getId());
+        verify(itemRepository, times(1)).findById(anyLong());
+    }
+
+    @Test
+    void addBooking_whenItemIsNotAvailable_shouldThrowItemIsUnavailableException() {
         item.setAvailable(false);
         when(userRepository.findById(userDto.getId())).thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
@@ -147,7 +205,31 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void addBooking_WhenItemOwnerEqualsBooker_ShouldThrowUserIsOwnerException() {
+    void addBooking_whenUserDoesntExist_shouldThrowUserNotFoundException() {
+        when(userRepository.findById(userDto.getId())).thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(UserNotFoundException.class)
+                .isThrownBy(() -> bookingService.addBooking(userDto.getId(), bookingDto))
+                .withMessage("пользователь с id " + item.getId() + " не существует");
+
+        verify(userRepository, times(1)).findById(userDto.getId());
+    }
+
+    @Test
+    void addBooking_whenItemDoesntExist_shouldThrowItemNotFoundException() {
+        when(userRepository.findById(userDto.getId())).thenReturn(Optional.of(user));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(ItemNotFoundException.class)
+                .isThrownBy(() -> bookingService.addBooking(userDto.getId(), bookingDto))
+                .withMessage("предмет с id " + item.getId() + " не существует");
+
+        verify(userRepository, times(1)).findById(userDto.getId());
+        verify(itemRepository, times(1)).findById(anyLong());
+    }
+
+    @Test
+    void addBooking_whenItemOwnerEqualsBooker_shouldThrowUserIsOwnerException() {
         item.setOwner(user);
         when(userRepository.findById(userDto.getId())).thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
@@ -260,6 +342,84 @@ class BookingServiceImplTest {
     }
 
     @Test
+    void findAllBookingsForBooker_WhenBookingStateCURRENT() {
+        booking.setStartDate(LocalDateTime.now().minusHours(1));
+        booking.setEndDate(LocalDateTime.now().plusHours(1));
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findAllBookingsForBookerByStatus(anyLong(), any())).thenReturn(List.of(booking));
+
+        Collection<BookingCreateResponseDto> actualBookingsDtoOut = bookingService.findAllBookingsForBooker(user.getId(), "CURRENT", 0, 10);
+
+        assertThat(actualBookingsDtoOut).usingRecursiveAssertion().isEqualTo(expectedBookingsDtoOut);
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(bookingRepository, times(1)).findAllBookingsForBookerByStatus(anyLong(), any());
+    }
+
+    @Test
+    void findAllBookingsForBooker_WhenBookingStateFUTURE() {
+        booking.setStartDate(LocalDateTime.now().plusHours(1));
+        booking.setEndDate(LocalDateTime.now().plusHours(2));
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findAllBookingsForBookerByStatus(anyLong(), any())).thenReturn(List.of(booking));
+
+        Collection<BookingCreateResponseDto> actualBookingsDtoOut = bookingService.findAllBookingsForBooker(user.getId(), "FUTURE", 0, 10);
+
+        assertThat(actualBookingsDtoOut).usingRecursiveAssertion().isEqualTo(expectedBookingsDtoOut);
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(bookingRepository, times(1)).findAllBookingsForBookerByStatus(anyLong(), any());
+    }
+
+    @Test
+    void findAllBookingsForBooker_WhenBookingStatePAST() {
+        booking.setStartDate(LocalDateTime.now().minusHours(3));
+        booking.setEndDate(LocalDateTime.now().minusHours(2));
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findAllBookingsForBookerByStatus(anyLong(), any())).thenReturn(List.of(booking));
+
+        Collection<BookingCreateResponseDto> actualBookingsDtoOut = bookingService.findAllBookingsForBooker(user.getId(), "PAST", 0, 10);
+
+        assertThat(actualBookingsDtoOut).usingRecursiveAssertion().isEqualTo(expectedBookingsDtoOut);
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(bookingRepository, times(1)).findAllBookingsForBookerByStatus(anyLong(), any());
+    }
+
+    @Test
+    void findAllBookingsForBooker_WhenBookingStateWAITING() {
+        booking.setStatus(BookingStatus.WAITING);
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findAllBookingsForBookerByStatus(anyLong(), any())).thenReturn(List.of(booking));
+
+        Collection<BookingCreateResponseDto> actualBookingsDtoOut = bookingService.findAllBookingsForBooker(user.getId(), "WAITING", 0, 10);
+
+        assertThat(actualBookingsDtoOut).usingRecursiveAssertion().isEqualTo(expectedBookingsDtoOut);
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(bookingRepository, times(1)).findAllBookingsForBookerByStatus(anyLong(), any());
+    }
+
+    @Test
+    void findAllBookingsForBooker_WhenBookingStateREJECTED() {
+        booking.setStatus(BookingStatus.REJECTED);
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findAllBookingsForBookerByStatus(anyLong(), any())).thenReturn(List.of(booking));
+
+        Collection<BookingCreateResponseDto> actualBookingsDtoOut = bookingService.findAllBookingsForBooker(user.getId(), "REJECTED", 0, 10);
+
+        assertThat(actualBookingsDtoOut).usingRecursiveAssertion().isEqualTo(expectedBookingsDtoOut);
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(bookingRepository, times(1)).findAllBookingsForBookerByStatus(anyLong(), any());
+    }
+
+    @Test
     void findAllBookingsForBooker_WhenBookingStateIsNotValid_ShouldThrowBookingStateConversionException() {
         assertThatExceptionOfType(BookingStateConversionException.class)
                 .isThrownBy(() -> bookingService.findAllBookingsForBooker(user.getId(), "ERROR", 0, 10))
@@ -267,7 +427,7 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getAllByOwnerWhenBookingStateAll() {
+    void findAllBookingsForItemsOwner_WhenBookingStateAll() {
         user.setId(2L);
         List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
@@ -281,9 +441,91 @@ class BookingServiceImplTest {
         verify(bookingRepository, times(1)).findByItemIdIn(any(), any());
     }
 
+    @Test
+    void findAllBookingsForItemsOwner_WhenBookingStateCURRENT() {
+        booking.setStartDate(LocalDateTime.now().minusHours(1));
+        booking.setEndDate(LocalDateTime.now().plusHours(1));
+        user.setId(2L);
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findByItemIdIn(any(), any())).thenReturn(List.of(booking));
+
+        Collection<BookingCreateResponseDto> actualBookingsDtoOut = bookingService.findAllBookingsForItemsOwner(user.getId(), "CURRENT", 0, 10);
+
+        assertThat(actualBookingsDtoOut).usingRecursiveAssertion().isEqualTo(expectedBookingsDtoOut);
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(bookingRepository, times(1)).findByItemIdIn(any(), any());
+    }
 
     @Test
-    void getAllByOwnerWhenBookingStateIsNotValidThenThrowIllegalArgumentException() {
+    void findAllBookingsForItemsOwner_WhenBookingStateFUTURE() {
+        booking.setStartDate(LocalDateTime.now().plusHours(1));
+        booking.setEndDate(LocalDateTime.now().plusHours(2));
+        user.setId(2L);
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findByItemIdIn(any(), any())).thenReturn(List.of(booking));
+
+        Collection<BookingCreateResponseDto> actualBookingsDtoOut = bookingService.findAllBookingsForItemsOwner(user.getId(), "FUTURE", 0, 10);
+
+        assertThat(actualBookingsDtoOut).usingRecursiveAssertion().isEqualTo(expectedBookingsDtoOut);
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(bookingRepository, times(1)).findByItemIdIn(any(), any());
+    }
+
+    @Test
+    void findAllBookingsForItemsOwner_WhenBookingStatePAST() {
+        booking.setStartDate(LocalDateTime.now().minusHours(3));
+        booking.setEndDate(LocalDateTime.now().minusHours(2));
+        user.setId(2L);
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findByItemIdIn(any(), any())).thenReturn(List.of(booking));
+
+        Collection<BookingCreateResponseDto> actualBookingsDtoOut = bookingService.findAllBookingsForItemsOwner(user.getId(), "PAST", 0, 10);
+
+        assertThat(actualBookingsDtoOut).usingRecursiveAssertion().isEqualTo(expectedBookingsDtoOut);
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(bookingRepository, times(1)).findByItemIdIn(any(), any());
+    }
+
+    @Test
+    void findAllBookingsForItemsOwner_WhenBookingStateWAITING() {
+        booking.setStatus(BookingStatus.WAITING);
+        user.setId(2L);
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findByItemIdIn(any(), any())).thenReturn(List.of(booking));
+
+        Collection<BookingCreateResponseDto> actualBookingsDtoOut = bookingService.findAllBookingsForItemsOwner(user.getId(), "WAITING", 0, 10);
+
+        assertThat(actualBookingsDtoOut).usingRecursiveAssertion().isEqualTo(expectedBookingsDtoOut);
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(bookingRepository, times(1)).findByItemIdIn(any(), any());
+    }
+
+    @Test
+    void findAllBookingsForItemsOwner_WhenBookingStateREJECTED() {
+        booking.setStatus(BookingStatus.REJECTED);
+        user.setId(2L);
+        List<BookingCreateResponseDto> expectedBookingsDtoOut = List.of(BookingMapper.toBookingCreateResponseDto(booking));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.findByItemIdIn(any(), any())).thenReturn(List.of(booking));
+
+        Collection<BookingCreateResponseDto> actualBookingsDtoOut = bookingService.findAllBookingsForItemsOwner(user.getId(), "REJECTED", 0, 10);
+
+        assertThat(actualBookingsDtoOut).usingRecursiveAssertion().isEqualTo(expectedBookingsDtoOut);
+
+        verify(userRepository, times(1)).findById(user.getId());
+        verify(bookingRepository, times(1)).findByItemIdIn(any(), any());
+    }
+
+    @Test
+    void findAllBookingsForItemsOwner_WhenBookingStateIsNotValidThenThrowIllegalArgumentException() {
         assertThatExceptionOfType(BookingStateConversionException.class)
                 .isThrownBy(() -> bookingService.findAllBookingsForItemsOwner(user.getId(), "ERROR", 0, 10))
                 .withMessage("Unknown state: ERROR");
