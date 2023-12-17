@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @AllArgsConstructor
 @ToString
+@EqualsAndHashCode
 public class ItemDto {
     private final Long id;
 

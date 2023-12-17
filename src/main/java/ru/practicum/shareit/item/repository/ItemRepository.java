@@ -7,8 +7,6 @@ import java.util.Collection;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
-//    Collection<Item> getAvailableItemsByKeyWord(String keyWord);
-
     Collection<Item> findAllByOwnerId(long userId);
 
     // TODO сделать правильный поиск (по имени тоже)
