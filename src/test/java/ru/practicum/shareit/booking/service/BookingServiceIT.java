@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.service;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Tag("IntegrationTest")
-public class BookingServiceITTest {
+public class BookingServiceIT {
 
     @Autowired
     private BookingService bookingService;
