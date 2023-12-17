@@ -2,14 +2,15 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.booking.dto.BookingCreateResponseDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentDtoResponse;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.exception.*;
 import ru.practicum.shareit.item.model.Comment;
@@ -92,6 +93,7 @@ public class ItemServiceImpl implements ItemService {
         log.info("найден предмет с id {}", item.getId());
 
         List<Comment> comments = commentRepository.findAllByItemId(itemId);
+        log.info("найденные комментарии к вещи: {}", comments);
 
         if (!item.getOwner().getId().equals(userId)) {
             log.info("пользователь {} не является владельцем предмета {}", userId, item);
@@ -102,13 +104,10 @@ public class ItemServiceImpl implements ItemService {
         List<Booking> bookings = bookingRepository.findAllByItemAndStatusOrderByStartDateAsc(item, status);
         log.info("найденные бронирования для вещи {} со статусом {}: {}", item, status, bookings);
 
-        if (bookings.isEmpty()) {
-            return ItemMapper.toItemDtoWithBooking(item, comments);
-        }
-
-        Booking lastBooking = getLastBooking(bookings, LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        Booking lastBooking = getLastBooking(bookings, now);
         log.info("последнее бронироварие: {}", lastBooking);
-        Booking nextBooking = getNextBooking(bookings, LocalDateTime.now());
+        Booking nextBooking = getNextBooking(bookings, now);
         log.info("следующее бронирование: {}", nextBooking);
 
         return ItemMapper.toItemDtoWithBooking(item, comments, lastBooking, nextBooking);
@@ -119,52 +118,27 @@ public class ItemServiceImpl implements ItemService {
     public Collection<ItemDtoWithBooking> getAllUserItems(Long userId) {
         ensureUserExists(userId);
 
-        List<Item> itemsOfOwner = new ArrayList<>(itemRepository.findAllByOwnerId(userId));
-        log.info("found items of owner: {}", itemsOfOwner);
+        List<Item> ownerItems = new ArrayList<>(itemRepository.findAllByOwnerId(userId));
+        log.info("найденные предметы пользователя: {}", ownerItems);
 
         List<ItemDtoWithBooking> dtos = new ArrayList<>();
-
-        for (Item item : itemsOfOwner) {
-            ItemDtoWithBooking dto = new ItemDtoWithBooking();
+        for (Item item : ownerItems) {
             Long itemId = item.getId();
-            dto.setItem(item);
-//            dto.setId(item.getId());
-//            dto.setName(item.getName());
-//            dto.setDescription(item.getDescription());
-//            dto.setAvailable(item.getAvailable());
+
+            List<Comment> comments = commentRepository.findAllByItemId(itemId);
+            log.info("найденные комментарии к вещи: {}", comments);
+
+            BookingStatus status = BookingStatus.APPROVED;
+            List<Booking> bookings = bookingRepository.findAllByItemAndStatusOrderByStartDateAsc(item, status);
+            log.info("найденные бронирования для вещи {} со статусом {}: {}", item, status, bookings);
 
             LocalDateTime now = LocalDateTime.now();
-            List<Booking> bookings = bookingRepository.findByItemId(itemId, Sort.by(Sort.Direction.DESC, "startDate"))
-                    .stream().filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
-                    .collect(Collectors.toList());
-            log.info("found bookings for item {}: {}", item, bookings);
+            Booking lastBooking = getLastBooking(bookings, now);
+            log.info("последнее бронироварие: {}", lastBooking);
+            Booking nextBooking = getNextBooking(bookings, now);
+            log.info("следующее бронирование: {}", nextBooking);
 
-            if (bookings.isEmpty()) {
-                dtos.add(dto);
-            }
-
-            if (!bookings.isEmpty()) {
-                Booking lastBooking = bookings.get(bookings.size() - 1);
-                log.info("lastBooking = {}", lastBooking);
-                dto.setLastBooking(new BookingMetaData(
-                        lastBooking.getId(), lastBooking.getBooker().getId()));
-                if (bookings.size() == 1) {
-                    log.info("only 1 booking");
-                    dtos.add(dto);
-                    continue;
-                }
-
-                List<Booking> afterNow = bookings.stream()
-                        .filter(b -> b.getStartDate().isAfter(now))
-                        .collect(Collectors.toList());
-                log.info("afterNow = {}", afterNow);
-
-                Booking nextBooking = afterNow.get(afterNow.size() - 1);
-                log.info("nextBooking = {}", nextBooking);
-                dto.setNextBooking(new BookingMetaData(
-                        nextBooking.getId(), nextBooking.getBooker().getId()));
-                dtos.add(dto);
-            }
+            dtos.add(ItemMapper.toItemDtoWithBooking(item, comments, lastBooking, nextBooking));
         }
 
         return dtos;
