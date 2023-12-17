@@ -33,9 +33,9 @@ public class ItemController {
     }
 
     @PatchMapping(value = "/{itemId}")
-    public ItemUpdateDto updateItem(@RequestHeader(USER_ID_HEADER) Long userId,
+    public ItemDto updateItem(@RequestHeader(USER_ID_HEADER) Long userId,
                                     @PathVariable("itemId") Long itemId,
-                                    @RequestBody ItemUpdateDto itemUpdateDto) {
+                                    @RequestBody ItemDto itemUpdateDto) {
         log.info("got request PATCH /items/{itemId}");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, USER_ID_HEADER, userId);
         log.info("itemId = {}", itemId);

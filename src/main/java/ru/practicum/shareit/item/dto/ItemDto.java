@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 @ToString
 @EqualsAndHashCode
 public class ItemDto {
-    private final Long id;
+    private Long id;
 
     @NotBlank
     private final String name;

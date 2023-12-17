@@ -63,22 +63,22 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
-    public ItemUpdateDto updateItem(Long userId, Long itemId, ItemUpdateDto itemUpdateDto) {
+    public ItemDto updateItem(Long userId, Long itemId, ItemDto itemUpdateDto) {
         Item oldItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
 
-        ensureUserExists(userId);
+        User owner = ensureUserExists(userId);
         ensureUserIsOwner(userId, itemId);
 
         itemUpdateDto.setId(itemId);
 
-        Item itemToUpdate = ItemMapper.toItem(itemUpdateDto);
+        Item itemToUpdate = ItemMapper.toItem(itemUpdateDto, owner);
         itemToUpdate = mapItemWithNullFields(oldItem, itemToUpdate);
 
         Item updated = itemRepository.save(itemToUpdate);
 
         log.info("предмет с id {} обновлен", updated.getId());
-        return ItemMapper.toItemUpdateDto(updated);
+        return ItemMapper.toItemDto(updated);
     }
 
     @Override

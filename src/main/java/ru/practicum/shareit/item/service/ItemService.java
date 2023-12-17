@@ -7,7 +7,7 @@ import java.util.Collection;
 public interface ItemService {
     ItemDto createItem(Long userId, ItemDto itemDto);
 
-    ItemUpdateDto updateItem(Long userId, Long itemId, ItemUpdateDto itemUpdateDto);
+    ItemDto updateItem(Long userId, Long itemId, ItemDto itemUpdateDto);
 
     ItemWithBookingDto getItemById(Long userId, Long itemId);
 

@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemUpdateDto;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
@@ -54,12 +53,12 @@ class ItemServiceImplTest {
             .available(true)
             .build();
 
-    private final ItemUpdateDto itemUpdateDto = ItemUpdateDto.builder()
-            .id(itemDto.getId())
-            .name("updated name")
-            .description("updated description")
-            .available(false)
-            .build();
+//    private final ItemUpdateDto itemUpdateDto = ItemUpdateDto.builder()
+//            .id(itemDto.getId())
+//            .name("updated name")
+//            .description("updated description")
+//            .available(false)
+//            .build();
 
     private final User owner = User.builder()
             .id(200L)
@@ -131,14 +130,14 @@ class ItemServiceImplTest {
 
     @Test
     void updateItem() {
-        Item item = ItemMapper.toItem(itemUpdateDto);
+        Item item = ItemMapper.toItem(itemDto, owner);
 
         when(itemRepository.findById(item.getId())).thenReturn(null);
         when(userRepository.findById(item.getOwner().getId())).thenReturn(Optional.of(owner));
 
-        ItemUpdateDto response = itemService.updateItem(owner.getId(), itemUpdateDto.getId(), itemUpdateDto);
+        ItemDto response = itemService.updateItem(owner.getId(), itemDto.getId(), itemDto);
 
-        assertThat(response).isEqualTo(itemUpdateDto);
+        assertThat(response).isEqualTo(itemDto);
 
         verify(userRepository, times(1)).findById(item.getOwner().getId());
         verify(itemRepository, times(1)).save(item);
