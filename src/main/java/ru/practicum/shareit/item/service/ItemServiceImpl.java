@@ -51,7 +51,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public ItemDto createItem(Long userId, ItemDto itemDto) {
-        User owner = ensureUserExists(userId);
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> generateUserNotFoundException(userId));
 
         Item item = ItemMapper.toItem(itemDto, owner);
 
@@ -72,7 +73,8 @@ public class ItemServiceImpl implements ItemService {
         Item oldItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
 
-        User owner = ensureUserExists(userId);
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> generateUserNotFoundException(userId));
         ensureUserIsOwner(owner, oldItem);
 
         itemUpdateDto.setId(itemId);
@@ -89,7 +91,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional(readOnly = true)
     public ItemDtoWithBooking getItemById(Long userId, Long itemId) {
-        ensureUserExists(userId);
+        userRepository.findById(userId)
+                .orElseThrow(() -> generateUserNotFoundException(userId));
 
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> generateItemNotFoundException(itemId));
@@ -119,7 +122,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional(readOnly = true)
     public Collection<ItemDtoWithBooking> getAllUserItems(Long userId) {
-        ensureUserExists(userId);
+        userRepository.findById(userId)
+                .orElseThrow(() -> generateUserNotFoundException(userId));
 
         List<Item> ownerItems = new ArrayList<>(itemRepository.findAllByOwnerId(userId));
         log.info("найденные предметы пользователя: {}", ownerItems);
@@ -150,7 +154,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional(readOnly = true)
     public Collection<ItemDto> getAvailableItemsByKeyWord(Long userId, String keyWord) {
-        ensureUserExists(userId);
+        userRepository.findById(userId)
+                .orElseThrow(() -> generateUserNotFoundException(userId));
 
         log.info("найдены предметы пользователя {} по ключевому слову {}", userId, keyWord);
         return itemRepository.findAllByAvailableTrueAndDescriptionContainingIgnoreCase(keyWord).stream()
@@ -179,19 +184,6 @@ public class ItemServiceImpl implements ItemService {
         Comment saved = commentRepository.save(comment);
 
         return CommentMapper.toCommentResponse(saved);
-    }
-
-    private User ensureUserExists(Long userId) {
-        Optional<User> userOpt = userRepository.findById(userId);
-
-        if (userOpt.isEmpty()) {
-            String message = "пользователь с id " + userId + " не существует";
-            log.error(message);
-            throw new UserNotFoundException(message);
-        }
-
-        log.info("пользователь с id {} найден", userId);
-        return userOpt.get();
     }
 
     private void ensureUserIsOwner(final User user, final Item item) {

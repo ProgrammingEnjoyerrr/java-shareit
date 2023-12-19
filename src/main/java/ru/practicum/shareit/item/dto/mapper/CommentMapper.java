@@ -30,4 +30,10 @@ public class CommentMapper {
         commentDto.setCreated(comment.getCreated());
         return commentDto;
     }
+
+    public static CommentDto toCommentDto(final Comment comment) {
+        return CommentDto.builder()
+                .text(comment.getText())
+                .build();
+    }
 }
