@@ -10,7 +10,6 @@ import java.util.List;
 
 @Repository
 public interface ItemRequestRepository extends JpaRepository<ItemRequest, Long> {
-    Collection<ItemRequest> findAllByRequesterIdOrderByCreatedDesc(long userId);
 
     Collection<ItemRequest> findAllByRequesterId(long userId);
 

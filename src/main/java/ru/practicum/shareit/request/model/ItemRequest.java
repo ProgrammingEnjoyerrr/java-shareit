@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Setter
 @Getter
+@EqualsAndHashCode
 public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
