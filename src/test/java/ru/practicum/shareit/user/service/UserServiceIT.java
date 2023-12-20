@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 //@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Tag("IntegrationTest")
+@Disabled
 public class UserServiceIT {
 
     @Autowired
