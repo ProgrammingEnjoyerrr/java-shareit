@@ -1,9 +1,6 @@
 package ru.practicum.shareit.request.dto;
 
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 
@@ -11,6 +8,8 @@ import javax.validation.constraints.NotBlank;
 @ToString
 @EqualsAndHashCode
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ItemRequestRequestDto {
     @NotBlank
     private String description;
