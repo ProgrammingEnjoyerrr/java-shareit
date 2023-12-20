@@ -173,10 +173,12 @@ class BookingServiceImplTest {
 
     @Test
     void addBooking_whenEndIsEqualToStart_shouldThrowBookingDatesValidatorException() {
+        LocalDateTime sameTime = LocalDateTime.now().plusDays(2L);
+
         final BookingCreateRequestDto bookingDtoEndBeforeStart = BookingCreateRequestDto.builder()
                 .itemId(1L)
-                .start(LocalDateTime.now().plusDays(2L))
-                .end(LocalDateTime.now().plusDays(2L))
+                .start(sameTime)
+                .end(sameTime)
                 .build();
 
         when(userRepository.findById(userDto.getId())).thenReturn(Optional.of(user));
