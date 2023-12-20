@@ -20,7 +20,7 @@ import java.util.Collection;
 @Slf4j
 public class BookingController {
 
-    public static final String USER_ID_HEADER = "X-Sharer-User-Id";
+    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
     private static final String USER_ID_HEADER_LOG_PLACEHOLDER =
             USER_ID_HEADER + ": {}";
 

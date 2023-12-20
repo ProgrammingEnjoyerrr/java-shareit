@@ -27,7 +27,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ru.practicum.shareit.booking.controller.BookingController.USER_ID_HEADER;
 
 @WebMvcTest(controllers = BookingController.class)
 class BookingControllerTest {
@@ -40,6 +39,8 @@ class BookingControllerTest {
 
     @MockBean
     private BookingService bookingService;
+
+    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
 
     private final User user = User.builder()
             .id(1L)
