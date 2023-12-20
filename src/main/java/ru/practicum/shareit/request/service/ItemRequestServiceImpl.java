@@ -17,7 +17,6 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -79,20 +78,22 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> generateUserNotFoundException(userId));
 
-        Optional<ItemRequest> itemRequest = itemRequestRepository.findById(requestId);
-        if (itemRequest.isEmpty()) {
-            final String message = String.format("Запрос вещи с id = %d не был найден.", requestId);
-            log.error(message);
-            throw new ItemRequestNotFoundException(message);
-        }
-        log.info("запрос вещи {} по id {}", itemRequest.get(), requestId);
+        ItemRequest itemRequest = itemRequestRepository.findById(requestId)
+                .orElseThrow(() -> generateItemRequestNotFoundException(requestId));
+        log.info("запрос вещи {} по id {}", itemRequest, requestId);
 
-        return ItemRequestMapper.toItemRequestResponseDto(itemRequest.get());
+        return ItemRequestMapper.toItemRequestResponseDto(itemRequest);
     }
 
     private UserNotFoundException generateUserNotFoundException(long userId) {
         String message = "пользователь с id " + userId + " не существует";
         log.error(message);
         return new UserNotFoundException(message);
+    }
+
+    private ItemRequestNotFoundException generateItemRequestNotFoundException(long requestId) {
+        final String message = String.format("Запрос вещи с id = %d не был найден.", requestId);
+        log.error(message);
+        throw new ItemRequestNotFoundException(message);
     }
 }

@@ -16,6 +16,7 @@ import java.util.List;
 @Setter
 @Getter
 @EqualsAndHashCode
+@ToString
 public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
