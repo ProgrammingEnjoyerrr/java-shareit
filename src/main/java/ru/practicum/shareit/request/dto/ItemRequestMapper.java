@@ -12,12 +12,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+
 @UtilityClass
 public class ItemRequestMapper {
-    public ItemRequestResponseDto toItemRequestResponseDto(ItemRequest itemRequest) {
+    public ItemRequestResponseDto
+    toItemRequestResponseDto(ItemRequest itemRequest) {
         List<ItemDto> items = new ArrayList<>();
         if (Objects.nonNull(itemRequest.getItems())) {
-            items = itemRequest.getItems().stream()
+            items = itemRequest.getItems()
+                    .stream()
                     .map(ItemMapper::toItemDto)
                     .collect(Collectors.toList());
         }

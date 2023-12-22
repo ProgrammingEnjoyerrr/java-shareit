@@ -9,10 +9,12 @@ import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
+
 @UtilityClass
 public class CommentMapper {
 
-    public static Comment toComment(final CommentDto commentDto, final Item item, final User user) {
+    public Comment toComment(final CommentDto commentDto, final Item item,
+                             final User user) {
         Comment comment = new Comment();
         comment.setText(commentDto.getText());
         comment.setItem(item);
@@ -22,7 +24,7 @@ public class CommentMapper {
         return comment;
     }
 
-    public static CommentDtoResponse toCommentResponse(final Comment comment) {
+    public CommentDtoResponse toCommentResponse(final Comment comment) {
         CommentDtoResponse commentDto = new CommentDtoResponse();
         commentDto.setId(comment.getId());
         commentDto.setText(comment.getText());
@@ -31,9 +33,7 @@ public class CommentMapper {
         return commentDto;
     }
 
-    public static CommentDto toCommentDto(final Comment comment) {
-        return CommentDto.builder()
-                .text(comment.getText())
-                .build();
+    public CommentDto toCommentDto(final Comment comment) {
+        return CommentDto.builder().text(comment.getText()).build();
     }
 }

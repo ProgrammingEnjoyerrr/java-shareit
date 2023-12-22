@@ -13,9 +13,10 @@ import ru.practicum.shareit.user.model.User;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @UtilityClass
 public class ItemMapper {
-    public static Item toItem(ItemDto dto, User owner) {
+    public Item toItem(ItemDto dto, User owner) {
         return Item.builder()
                 .id(dto.getId())
                 .name(dto.getName())
@@ -25,7 +26,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public static ItemDto toItemDto(Item item) {
+    public ItemDto toItemDto(Item item) {
         ItemDto itemDto = ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -40,35 +41,43 @@ public class ItemMapper {
         return itemDto;
     }
 
-    public static ItemDtoWithBooking toItemDtoWithBooking(final Item item, final List<Comment> comments) {
+    public ItemDtoWithBooking toItemDtoWithBooking(final Item item,
+                                                   final List<Comment> comments) {
         ItemDtoWithBooking dto = new ItemDtoWithBooking();
         dto.setItem(item);
-        List<CommentDtoResponse> commentsDto = comments.stream()
-                .map(CommentMapper::toCommentResponse)
-                .collect(Collectors.toList());
+        List<CommentDtoResponse> commentsDto =
+                comments.stream()
+                        .map(CommentMapper::toCommentResponse)
+                        .collect(Collectors.toList());
         dto.setComments(commentsDto);
 
         return dto;
     }
 
-    public static ItemDtoWithBooking toItemDtoWithBooking(final Item item, final List<Comment> comments,
-                                                          final Booking lastBooking,
-                                                          final Booking nextBooking) {
+    public ItemDtoWithBooking toItemDtoWithBooking(final Item item,
+                                                   final List<Comment> comments,
+                                                   final Booking lastBooking,
+                                                   final Booking nextBooking) {
         ItemDtoWithBooking dto = new ItemDtoWithBooking();
 
         dto.setItem(item);
 
-        List<CommentDtoResponse> commentsDto = comments.stream()
-                .map(CommentMapper::toCommentResponse)
-                .collect(Collectors.toList());
+        List<CommentDtoResponse> commentsDto =
+                comments.stream()
+                        .map(CommentMapper::toCommentResponse)
+                        .collect(Collectors.toList());
         dto.setComments(commentsDto);
 
-        dto.setLastBooking(lastBooking != null
-                ? new BookingMetaData(lastBooking.getId(), lastBooking.getBooker().getId())
-                : null);
-        dto.setNextBooking(nextBooking != null
-                ? new BookingMetaData(nextBooking.getId(), nextBooking.getBooker().getId())
-                : null);
+        dto.setLastBooking(
+                lastBooking != null
+                        ? new BookingMetaData(lastBooking.getId(),
+                        lastBooking.getBooker().getId())
+                        : null);
+        dto.setNextBooking(
+                nextBooking != null
+                        ? new BookingMetaData(nextBooking.getId(),
+                        nextBooking.getBooker().getId())
+                        : null);
 
         return dto;
     }
