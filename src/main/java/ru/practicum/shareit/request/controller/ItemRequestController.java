@@ -27,8 +27,8 @@ public class ItemRequestController {
     private final ItemRequestService itemRequestService;
 
     @PostMapping
-    ItemRequestResponseDto createItemRequest(@RequestHeader(value = USER_ID_HEADER) Long userId,
-                                             @RequestBody @Valid ItemRequestRequestDto itemRequestRequestDto) {
+    public ItemRequestResponseDto createItemRequest(@RequestHeader(value = USER_ID_HEADER) Long userId,
+                                                    @RequestBody @Valid ItemRequestRequestDto itemRequestRequestDto) {
         log.info("got request POST /requests");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, userId);
         log.info("request body: {}", itemRequestRequestDto);
@@ -36,14 +36,14 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    Collection<ItemRequestResponseDto> getUserItemRequests(@RequestHeader(value = USER_ID_HEADER) Long userId) {
+    public Collection<ItemRequestResponseDto> getUserItemRequests(@RequestHeader(value = USER_ID_HEADER) Long userId) {
         log.info("got request GET /requests");
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, userId);
         return itemRequestService.getUserItemRequests(userId);
     }
 
     @GetMapping(value = "/all")
-    Collection<ItemRequestResponseDto> getItemRequestFromOtherUsers(
+    public Collection<ItemRequestResponseDto> getItemRequestFromOtherUsers(
             @RequestHeader(value = USER_ID_HEADER) Long userId,
             @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
             @RequestParam(name = "size", defaultValue = "10") @Positive Integer size) {
@@ -54,8 +54,8 @@ public class ItemRequestController {
     }
 
     @GetMapping("/{requestId}")
-    ItemRequestResponseDto getItemRequestById(@RequestHeader(value = USER_ID_HEADER) Long userId,
-                                              @PathVariable Long requestId) {
+    public ItemRequestResponseDto getItemRequestById(@RequestHeader(value = USER_ID_HEADER) Long userId,
+                                                     @PathVariable Long requestId) {
         log.info("got request GET /requests/{requestId = {}}", requestId);
         log.info(USER_ID_HEADER_LOG_PLACEHOLDER, userId);
         return itemRequestService.getItemRequestById(userId, requestId);
