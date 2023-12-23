@@ -6,17 +6,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.common.BaseErrorHandler;
 import ru.practicum.shareit.common.ErrorResponse;
-import ru.practicum.shareit.user.exception.NonUniqueEmailException;
 import ru.practicum.shareit.user.exception.UserNotFoundException;
 
 @RestControllerAdvice(value = "ru.practicum.shareit.user.controller")
 public class UserErrorHandler extends BaseErrorHandler {
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleNonUniqueEmailException(final NonUniqueEmailException e) {
-        return commonErrorResponse(e, HttpStatus.CONFLICT);
-    }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)

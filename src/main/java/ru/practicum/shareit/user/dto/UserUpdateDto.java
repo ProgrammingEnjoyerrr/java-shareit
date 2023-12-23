@@ -8,6 +8,7 @@ import javax.validation.constraints.Email;
 @Getter
 @AllArgsConstructor
 @ToString
+@EqualsAndHashCode
 public class UserUpdateDto {
     @Setter
     private Long id;

@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
+@EqualsAndHashCode
+@Builder
 public class BookingCreateResponseDto {
     private Long id;
     private LocalDateTime start;
