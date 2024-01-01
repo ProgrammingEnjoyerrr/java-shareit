@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     end_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     item_id BIGINT NOT NULL,
     booker_id BIGINT NOT NULL,
-    booking_status ENUM ('WAITING', 'APPROVED', 'REJECTED', 'CANCELED') NOT NULL,
+    booking_status varchar NOT NULL,
     CONSTRAINT pk_booking PRIMARY KEY (id),
     CONSTRAINT fk_item_id FOREIGN KEY (item_id) REFERENCES items(id),
     CONSTRAINT fk_booker_id FOREIGN KEY (booker_id) REFERENCES users(id)
