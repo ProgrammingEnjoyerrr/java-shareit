@@ -29,6 +29,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,7 +125,9 @@ public class ItemServiceImpl implements ItemService {
         userRepository.findById(userId)
                 .orElseThrow(() -> generateUserNotFoundException(userId));
 
-        List<Item> ownerItems = new ArrayList<>(itemRepository.findAllByOwnerId(userId));
+        List<Item> ownerItems = new ArrayList<>(itemRepository.findAllByOwnerId(userId)).stream()
+                .sorted(Comparator.comparing(Item::getId))
+                .collect(Collectors.toList());
         log.info("найденные предметы пользователя: {}", ownerItems);
 
         List<ItemDtoWithBooking> dtos = new ArrayList<>();
